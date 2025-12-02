@@ -32,7 +32,7 @@ Requirements:
 - Aspect ratio 4:3
 - The person should look similar to the reference but in illustration style`;
 
-    console.log("Using Lovable AI with nano banana (gemini-2.5-flash-image-preview)...");
+    console.log("Using Lovable AI with gemini-3-pro-image-preview...");
     
     const messageContent: any[] = [
       { type: "text", text: prompt }
@@ -55,7 +55,7 @@ Requirements:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
+        model: "google/gemini-3-pro-image-preview",
         messages: [{ role: "user", content: messageContent }],
         modalities: ["image", "text"]
       }),
