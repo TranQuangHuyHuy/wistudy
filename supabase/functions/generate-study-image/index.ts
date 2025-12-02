@@ -22,21 +22,19 @@ serve(async (req) => {
       throw new Error("No API key configured");
     }
 
-    // Build the prompt for image generation
-    let prompt = `Create a beautiful, aesthetic study scene image. The scene shows a cozy ${backgroundPrompt || "study environment with warm lighting"}. 
-    
+    // Build the prompt for image generation - focus on generating a study scene
+    // Don't try to extract/place a person from the reference image
+    const prompt = `Create a beautiful, aesthetic anime-style study scene illustration. The scene shows a cozy ${backgroundPrompt || "study environment with warm lighting and a desk setup"}.
+
 Style requirements:
 - Soft, warm lighting with gentle shadows
-- Clean, minimal aesthetic similar to Pinterest study setups
-- Comfortable, inviting atmosphere
-- High quality, photorealistic rendering
+- Clean, minimal aesthetic similar to lo-fi study backgrounds
+- Comfortable, inviting atmosphere with study elements (books, lamp, window)
+- High quality anime/illustration style rendering
 - Aspect ratio: 4:3
-- The image should evoke a calm, focused study mood`;
-
-    // If we have an idol image, update the prompt
-    if (idolImageBase64) {
-      prompt = `Based on the person in this reference photo, create an image of them studying in a ${backgroundPrompt || "cozy study environment"}. Keep their likeness but show them focused on studying. The scene should have soft, warm lighting and a calm atmosphere. Make it photorealistic and aesthetic. Aspect ratio 4:3.`;
-    }
+- The image should evoke a calm, focused study mood
+- Include a cute anime character studying at a desk
+- Pastel colors and dreamy atmosphere`;
 
     let response;
     let useGemini = !!GEMINI_API_KEY;
@@ -46,26 +44,6 @@ Style requirements:
       console.log("Trying Gemini API...");
       
       const parts: any[] = [{ text: prompt }];
-
-      if (idolImageBase64) {
-        const base64Data = idolImageBase64.includes(',') 
-          ? idolImageBase64.split(',')[1] 
-          : idolImageBase64;
-        
-        let mimeType = "image/jpeg";
-        if (idolImageBase64.includes("image/png")) {
-          mimeType = "image/png";
-        } else if (idolImageBase64.includes("image/webp")) {
-          mimeType = "image/webp";
-        }
-
-        parts.push({
-          inline_data: {
-            mime_type: mimeType,
-            data: base64Data
-          }
-        });
-      }
 
       response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`,
@@ -91,15 +69,6 @@ Style requirements:
       console.log("Using Lovable AI...");
       
       const messageContent: any[] = [{ type: "text", text: prompt }];
-
-      if (idolImageBase64) {
-        messageContent.push({
-          type: "image_url",
-          image_url: {
-            url: idolImageBase64.startsWith('data:') ? idolImageBase64 : `data:image/jpeg;base64,${idolImageBase64}`
-          }
-        });
-      }
 
       response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -157,7 +126,14 @@ Style requirements:
 
     if (!generatedImageUrl) {
       console.error("No image in response:", JSON.stringify(data).substring(0, 500));
-      throw new Error("Không thể tạo ảnh. Vui lòng thử lại.");
+      // Return a more helpful error message
+      return new Response(
+        JSON.stringify({ 
+          error: "AI không thể tạo ảnh lúc này. Vui lòng thử lại.",
+          details: textResponse || "Unknown error"
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
