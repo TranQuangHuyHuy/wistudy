@@ -14,9 +14,12 @@ serve(async (req) => {
   try {
     const { idolImageBase64, userImageBase64, backgroundPrompt } = await req.json();
 
+    // Try Gemini API key first, fallback to Lovable AI
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    if (!GEMINI_API_KEY && !LOVABLE_API_KEY) {
+      throw new Error("No API key configured");
     }
 
     // Build the prompt for image generation
@@ -35,98 +38,126 @@ Style requirements:
       prompt = `Based on the person in this reference photo, create an image of them studying in a ${backgroundPrompt || "cozy study environment"}. Keep their likeness but show them focused on studying. The scene should have soft, warm lighting and a calm atmosphere. Make it photorealistic and aesthetic. Aspect ratio 4:3.`;
     }
 
-    console.log("Generating image with Gemini API (Nano Banana)...");
+    let response;
+    let useGemini = !!GEMINI_API_KEY;
 
-    // Prepare the content parts
-    const parts: any[] = [{ text: prompt }];
-
-    // Add idol image as inline data if provided
-    if (idolImageBase64) {
-      // Extract base64 data from data URL
-      const base64Data = idolImageBase64.includes(',') 
-        ? idolImageBase64.split(',')[1] 
-        : idolImageBase64;
+    // Try Gemini API first
+    if (useGemini) {
+      console.log("Trying Gemini API...");
       
-      // Determine mime type
-      let mimeType = "image/jpeg";
-      if (idolImageBase64.includes("image/png")) {
-        mimeType = "image/png";
-      } else if (idolImageBase64.includes("image/webp")) {
-        mimeType = "image/webp";
+      const parts: any[] = [{ text: prompt }];
+
+      if (idolImageBase64) {
+        const base64Data = idolImageBase64.includes(',') 
+          ? idolImageBase64.split(',')[1] 
+          : idolImageBase64;
+        
+        let mimeType = "image/jpeg";
+        if (idolImageBase64.includes("image/png")) {
+          mimeType = "image/png";
+        } else if (idolImageBase64.includes("image/webp")) {
+          mimeType = "image/webp";
+        }
+
+        parts.push({
+          inline_data: {
+            mime_type: mimeType,
+            data: base64Data
+          }
+        });
       }
 
-      parts.push({
-        inline_data: {
-          mime_type: mimeType,
-          data: base64Data
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+          }),
         }
-      });
+      );
+
+      // If rate limited, try Lovable AI
+      if (response.status === 429 && LOVABLE_API_KEY) {
+        console.log("Gemini rate limited, falling back to Lovable AI...");
+        useGemini = false;
+      }
     }
 
-    // Call Gemini API with gemini-2.0-flash-exp-image-generation model
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`,
-      {
+    // Use Lovable AI as fallback or primary
+    if (!useGemini && LOVABLE_API_KEY) {
+      console.log("Using Lovable AI...");
+      
+      const messageContent: any[] = [{ type: "text", text: prompt }];
+
+      if (idolImageBase64) {
+        messageContent.push({
+          type: "image_url",
+          image_url: {
+            url: idolImageBase64.startsWith('data:') ? idolImageBase64 : `data:image/jpeg;base64,${idolImageBase64}`
+          }
+        });
+      }
+
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: parts
-            }
-          ],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"]
-          }
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [{ role: "user", content: messageContent }],
+          modalities: ["image", "text"]
         }),
-      }
-    );
+      });
+    }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
+    if (!response || !response.ok) {
+      const errorText = response ? await response.text() : "No response";
+      console.error("API error:", response?.status, errorText);
       
-      if (response.status === 429) {
+      if (response?.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Đã vượt quá giới hạn yêu cầu. Vui lòng thử lại sau." }),
+          JSON.stringify({ error: "Đã vượt quá giới hạn yêu cầu. Vui lòng đợi 1-2 phút rồi thử lại." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 403) {
-        return new Response(
-          JSON.stringify({ error: "API key không hợp lệ hoặc không có quyền truy cập." }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
       
-      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response?.status || 'unknown'}`);
     }
 
     const data = await response.json();
-    console.log("Gemini response received:", JSON.stringify(data).substring(0, 500));
+    console.log("API response received");
 
-    // Extract the generated image from response
+    // Extract image based on which API was used
     let generatedImageUrl = null;
     let textResponse = "";
 
-    if (data.candidates && data.candidates[0]?.content?.parts) {
-      for (const part of data.candidates[0].content.parts) {
-        if (part.inline_data?.data) {
-          // Found image data
-          const mimeType = part.inline_data.mime_type || "image/png";
-          generatedImageUrl = `data:${mimeType};base64,${part.inline_data.data}`;
-        }
-        if (part.text) {
-          textResponse = part.text;
+    if (useGemini) {
+      // Gemini response format
+      if (data.candidates && data.candidates[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+          if (part.inline_data?.data) {
+            const mimeType = part.inline_data.mime_type || "image/png";
+            generatedImageUrl = `data:${mimeType};base64,${part.inline_data.data}`;
+          }
+          if (part.text) {
+            textResponse = part.text;
+          }
         }
       }
+    } else {
+      // Lovable AI response format
+      generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      textResponse = data.choices?.[0]?.message?.content || "";
     }
 
     if (!generatedImageUrl) {
-      console.error("No image in response:", JSON.stringify(data));
-      throw new Error("Không thể tạo ảnh. Gemini có thể không hỗ trợ yêu cầu này.");
+      console.error("No image in response:", JSON.stringify(data).substring(0, 500));
+      throw new Error("Không thể tạo ảnh. Vui lòng thử lại.");
     }
 
     return new Response(
@@ -138,7 +169,7 @@ Style requirements:
     );
 
   } catch (error) {
-    console.error("Error in generate-study-image function:", error);
+    console.error("Error in generate-study-image:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Có lỗi xảy ra khi tạo ảnh" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
