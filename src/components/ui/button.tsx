@@ -17,6 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         pastel: "bg-[hsl(211_100%_91%)] text-foreground hover:bg-[hsl(340_100%_95%)] transition-colors duration-300",
         google: "bg-card border border-border text-foreground hover:bg-secondary shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)]",
+        facebook: "bg-[#1877F2] text-white hover:bg-[#166FE5] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)]",
       },
       size: {
         default: "h-11 px-6 py-2",
