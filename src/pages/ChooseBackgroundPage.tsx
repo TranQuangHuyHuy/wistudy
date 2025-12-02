@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,32 @@ import { BackgroundCard } from '@/components/wistudy/BackgroundCard';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ChooseBackgroundPage() {
   const navigate = useNavigate();
   const { userData, setSelectedBackground } = useWiStudy();
   const [selected, setSelected] = useState<string | null>(userData.selectedBackground);
   const [customBackground, setCustomBackground] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('bạn');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (profile?.full_name) {
+          const nameParts = profile.full_name.trim().split(' ');
+          setUserName(nameParts[nameParts.length - 1]);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
 
   const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,7 +82,7 @@ export default function ChooseBackgroundPage() {
               Chọn Background
             </h1>
             <p className="text-muted-foreground text-sm">
-              Không gian học tập bạn mong muốn
+              Không gian học tập của {userName} mong muốn
             </p>
           </div>
 
