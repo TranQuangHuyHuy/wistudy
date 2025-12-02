@@ -1,0 +1,59 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/wistudy/Logo';
+import { BookOpen, Sparkles, Clock, ArrowRight } from 'lucide-react';
+
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="p-6">
+        <Logo size="sm" />
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+        <div className="w-full max-w-md space-y-10 animate-fade-in text-center">
+          {/* Hero */}
+          <div className="space-y-4">
+            <div className="inline-flex p-4 bg-accent-blue rounded-3xl mb-4">
+              <BookOpen className="w-14 h-14 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Chào mừng đến WiStudy
+            </h1>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Tạo không gian học tập cá nhân với AI. Tập trung hơn, hiệu quả hơn.
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-card rounded-2xl shadow-soft text-left">
+              <Sparkles className="w-6 h-6 text-primary mb-2" />
+              <p className="text-sm font-medium">AI tạo ảnh</p>
+              <p className="text-xs text-muted-foreground">Không gian học tập cá nhân hóa</p>
+            </div>
+            <div className="p-4 bg-card rounded-2xl shadow-soft text-left">
+              <Clock className="w-6 h-6 text-primary mb-2" />
+              <p className="text-sm font-medium">Pomodoro</p>
+              <p className="text-xs text-muted-foreground">Quản lý thời gian hiệu quả</p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="space-y-4 pt-4">
+            <Button asChild size="lg" className="w-full">
+              <Link to="/login">
+                Bắt đầu ngay
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Miễn phí • Không cần thẻ tín dụng
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

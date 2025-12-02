@@ -73,7 +73,7 @@ export default function RegisterPage() {
         }
       } else {
         toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-        navigate('/');
+        navigate('/login');
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
@@ -163,7 +163,7 @@ export default function RegisterPage() {
 
           <p className="text-sm text-center text-muted-foreground">
             Đã có tài khoản?{' '}
-            <Link to="/" className="text-primary font-medium hover:underline">
+            <Link to="/login" className="text-primary font-medium hover:underline">
               Đăng nhập
             </Link>
           </p>
