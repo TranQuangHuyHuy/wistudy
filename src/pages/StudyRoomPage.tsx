@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home } from 'lucide-react';
+import { X, Home, Clock, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -20,6 +20,7 @@ import {
 export default function StudyRoomPage() {
   const navigate = useNavigate();
   const { userData, resetApp } = useWiStudy();
+  const [showTimer, setShowTimer] = useState(true);
 
   const handleExit = () => {
     resetApp();
@@ -80,15 +81,35 @@ export default function StudyRoomPage() {
         </div>
 
         {/* Timer overlay - draggable */}
-        <div className="absolute top-4 right-4 z-10">
-          <PomodoroTimer
-            studyTime={userData.pomodoroSettings.studyTime}
-            breakTime={userData.pomodoroSettings.breakTime}
-            rounds={userData.pomodoroSettings.rounds}
-            compact
-            draggable
-          />
-        </div>
+        {showTimer ? (
+          <div className="absolute top-4 right-4 z-10">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTimer(false)}
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background/80 hover:bg-background z-10"
+              >
+                <EyeOff className="w-3 h-3" />
+              </Button>
+              <PomodoroTimer
+                studyTime={userData.pomodoroSettings.studyTime}
+                breakTime={userData.pomodoroSettings.breakTime}
+                rounds={userData.pomodoroSettings.rounds}
+                compact
+                draggable
+              />
+            </div>
+          </div>
+        ) : (
+          <Button
+            onClick={() => setShowTimer(true)}
+            className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+            size="icon"
+          >
+            <Clock className="w-4 h-4" />
+          </Button>
+        )}
       </main>
     </div>
   );
