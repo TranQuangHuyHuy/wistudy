@@ -260,7 +260,7 @@ export default function PomodoroSetupPage() {
               <div className="flex justify-between">
                 <span className="text-foreground">Tổng thời gian</span>
                 <span className="font-semibold text-primary">
-                  {hours > 0 ? `${hours}h ${minutes}m` : `${minutes} phút`}
+                  {hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`}
                 </span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
