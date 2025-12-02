@@ -29,10 +29,10 @@ export default function LoginPage() {
               <BookOpen className="w-12 h-12 text-primary" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">
-              Học cùng Idol
+              WiStudy
             </h1>
             <p className="text-muted-foreground text-base leading-relaxed">
-              Tạo không gian học tập với idol yêu thích. Tập trung hơn, hiệu quả hơn.
+              Tạo không gian học tập cá nhân với AI. Tập trung hơn, hiệu quả hơn.
             </p>
           </div>
 
@@ -41,7 +41,7 @@ export default function LoginPage() {
             <div className="p-4 bg-card rounded-2xl shadow-soft">
               <Sparkles className="w-5 h-5 text-primary mb-2" />
               <p className="text-sm font-medium">AI tạo ảnh</p>
-              <p className="text-xs text-muted-foreground">Học cùng idol</p>
+              <p className="text-xs text-muted-foreground">Không gian cá nhân</p>
             </div>
             <div className="p-4 bg-card rounded-2xl shadow-soft">
               <Clock className="w-5 h-5 text-primary mb-2" />
