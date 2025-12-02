@@ -29,7 +29,7 @@ export default function LoginPage() {
               <BookOpen className="w-12 h-12 text-primary" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">
-              WiStudy
+              Góc Học Tập
             </h1>
             <p className="text-muted-foreground text-base leading-relaxed">
               Tạo không gian học tập cá nhân với AI. Tập trung hơn, hiệu quả hơn.
