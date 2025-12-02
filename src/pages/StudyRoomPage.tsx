@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, EyeOff } from 'lucide-react';
+import { X, Home, Clock, EyeOff, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -21,11 +21,28 @@ export default function StudyRoomPage() {
   const navigate = useNavigate();
   const { userData, resetApp } = useWiStudy();
   const [showTimer, setShowTimer] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleExit = () => {
     resetApp();
     navigate('/');
   };
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -110,6 +127,19 @@ export default function StudyRoomPage() {
             <Clock className="w-4 h-4" />
           </Button>
         )}
+
+        {/* Fullscreen button - bottom right */}
+        <Button
+          onClick={toggleFullscreen}
+          className="absolute bottom-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+          size="icon"
+        >
+          {isFullscreen ? (
+            <Minimize className="w-4 h-4" />
+          ) : (
+            <Maximize className="w-4 h-4" />
+          )}
+        </Button>
       </main>
     </div>
   );
