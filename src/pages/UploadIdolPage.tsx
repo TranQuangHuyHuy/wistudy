@@ -44,10 +44,10 @@ export default function UploadIdolPage() {
           {/* Title */}
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold text-foreground">
-              Chọn Idol của bạn
+              Tải ảnh của bạn
             </h1>
             <p className="text-muted-foreground text-sm">
-              Tải ảnh idol bạn muốn học cùng
+              Tải ảnh để AI tạo không gian học tập
             </p>
           </div>
 
