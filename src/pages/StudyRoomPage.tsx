@@ -45,37 +45,9 @@ export default function StudyRoomPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-card/80 backdrop-blur-sm border-b border-border">
-        <Logo size="sm" />
-        
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-muted-foreground">
-              <X className="w-5 h-5" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Thoát phòng học?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tiến trình học hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Tiếp tục học</AlertDialogCancel>
-              <AlertDialogAction onClick={handleExit}>
-                <Home className="w-4 h-4 mr-2" />
-                Về trang chủ
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </header>
-
-      {/* Main Content - Full screen image with timer overlay */}
-      <main className="flex-1 relative animate-fade-in">
+    <div className="min-h-screen bg-background relative">
+      {/* Main Content - Full screen image with overlays */}
+      <main className="absolute inset-0 animate-fade-in">
         {/* Full screen image */}
         <div className="absolute inset-0">
           {userData.generatedImage ? (
@@ -96,6 +68,39 @@ export default function StudyRoomPage() {
             </div>
           )}
         </div>
+
+        {/* Logo overlay - top left */}
+        <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 py-2">
+          <Logo size="sm" />
+        </div>
+
+        {/* Exit button - top left after logo */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-4 left-36 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Thoát phòng học?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tiến trình học hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Tiếp tục học</AlertDialogCancel>
+              <AlertDialogAction onClick={handleExit}>
+                <Home className="w-4 h-4 mr-2" />
+                Về trang chủ
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Timer overlay - draggable */}
         {showTimer ? (
