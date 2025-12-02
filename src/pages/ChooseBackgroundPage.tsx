@@ -73,7 +73,7 @@ export default function ChooseBackgroundPage() {
                 key={bg.id}
                 background={bg}
                 isSelected={selected === bg.id}
-                onSelect={() => setSelected(bg.id)}
+                onSelect={() => setSelected(selected === bg.id ? null : bg.id)}
               />
             ))}
             
