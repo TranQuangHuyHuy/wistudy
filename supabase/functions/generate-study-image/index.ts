@@ -14,9 +14,9 @@ serve(async (req) => {
   try {
     const { idolImageBase64, userImageBase64, backgroundPrompt } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
 
     // Build the prompt for image generation
@@ -30,48 +30,63 @@ Style requirements:
 - Aspect ratio: 4:3
 - The image should evoke a calm, focused study mood`;
 
-    // If we have reference images, include them in the request
-    const messageContent: any[] = [
-      {
-        type: "text",
-        text: prompt
-      }
-    ];
-
-    // Add idol image as reference if provided
+    // If we have an idol image, update the prompt
     if (idolImageBase64) {
-      messageContent.push({
-        type: "image_url",
-        image_url: {
-          url: idolImageBase64.startsWith('data:') ? idolImageBase64 : `data:image/jpeg;base64,${idolImageBase64}`
-        }
-      });
-      messageContent[0].text = `Based on the person in this reference photo, create an image of them studying in a ${backgroundPrompt || "cozy study environment"}. Keep their likeness but show them focused on studying. The scene should have soft, warm lighting and a calm atmosphere. Make it photorealistic and aesthetic.`;
+      prompt = `Based on the person in this reference photo, create an image of them studying in a ${backgroundPrompt || "cozy study environment"}. Keep their likeness but show them focused on studying. The scene should have soft, warm lighting and a calm atmosphere. Make it photorealistic and aesthetic. Aspect ratio 4:3.`;
     }
 
-    console.log("Generating image with Lovable AI...");
+    console.log("Generating image with Gemini API (Nano Banana)...");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: messageContent
+    // Prepare the content parts
+    const parts: any[] = [{ text: prompt }];
+
+    // Add idol image as inline data if provided
+    if (idolImageBase64) {
+      // Extract base64 data from data URL
+      const base64Data = idolImageBase64.includes(',') 
+        ? idolImageBase64.split(',')[1] 
+        : idolImageBase64;
+      
+      // Determine mime type
+      let mimeType = "image/jpeg";
+      if (idolImageBase64.includes("image/png")) {
+        mimeType = "image/png";
+      } else if (idolImageBase64.includes("image/webp")) {
+        mimeType = "image/webp";
+      }
+
+      parts.push({
+        inline_data: {
+          mime_type: mimeType,
+          data: base64Data
+        }
+      });
+    }
+
+    // Call Gemini API with gemini-2.0-flash-exp-image-generation model
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: parts
+            }
+          ],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"]
           }
-        ],
-        modalities: ["image", "text"]
-      }),
-    });
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -79,31 +94,45 @@ Style requirements:
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (response.status === 403) {
         return new Response(
-          JSON.stringify({ error: "Cần nạp thêm credits. Vui lòng liên hệ admin." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "API key không hợp lệ hoặc không có quyền truy cập." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      throw new Error(`AI gateway error: ${response.status}`);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log("AI response received");
+    console.log("Gemini response received:", JSON.stringify(data).substring(0, 500));
 
-    // Extract the generated image
-    const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    // Extract the generated image from response
+    let generatedImageUrl = null;
+    let textResponse = "";
+
+    if (data.candidates && data.candidates[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inline_data?.data) {
+          // Found image data
+          const mimeType = part.inline_data.mime_type || "image/png";
+          generatedImageUrl = `data:${mimeType};base64,${part.inline_data.data}`;
+        }
+        if (part.text) {
+          textResponse = part.text;
+        }
+      }
+    }
 
     if (!generatedImageUrl) {
       console.error("No image in response:", JSON.stringify(data));
-      throw new Error("Không thể tạo ảnh. Vui lòng thử lại.");
+      throw new Error("Không thể tạo ảnh. Gemini có thể không hỗ trợ yêu cầu này.");
     }
 
     return new Response(
       JSON.stringify({ 
         imageUrl: generatedImageUrl,
-        message: data.choices?.[0]?.message?.content || "Đã tạo ảnh thành công!"
+        message: textResponse || "Đã tạo ảnh thành công!"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
