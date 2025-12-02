@@ -56,10 +56,10 @@ export default function StudyRoomPage() {
         </AlertDialog>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col animate-fade-in">
-        {/* Generated Image - Takes up 60% of screen */}
-        <div className="flex-[0.6] relative overflow-hidden">
+      {/* Main Content - Full screen image with timer overlay */}
+      <main className="flex-1 relative animate-fade-in">
+        {/* Full screen image */}
+        <div className="absolute inset-0">
           {userData.generatedImage ? (
             <img
               src={userData.generatedImage}
@@ -77,17 +77,15 @@ export default function StudyRoomPage() {
               <p className="text-muted-foreground">Không có ảnh</p>
             </div>
           )}
-          
-          {/* Gradient overlay at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        {/* Timer Section */}
-        <div className="flex-[0.4] bg-background px-6 py-8 flex flex-col items-center justify-center">
+        {/* Timer overlay - top right corner */}
+        <div className="absolute top-4 right-4 z-10">
           <PomodoroTimer
             studyTime={userData.pomodoroSettings.studyTime}
             breakTime={userData.pomodoroSettings.breakTime}
             rounds={userData.pomodoroSettings.rounds}
+            compact
           />
         </div>
       </main>

@@ -7,9 +7,10 @@ interface PomodoroTimerProps {
   studyTime: number;
   breakTime: number;
   rounds: number;
+  compact?: boolean;
 }
 
-export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerProps) {
+export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false }: PomodoroTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
@@ -60,6 +61,97 @@ export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerPro
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Compact version for overlay
+  if (compact) {
+    const compactCircumference = 2 * Math.PI * 40;
+    const compactStrokeDashoffset = compactCircumference - (progress / 100) * compactCircumference;
+
+    return (
+      <div className="flex flex-col items-center bg-background/80 backdrop-blur-md rounded-2xl p-4 shadow-lg">
+        {/* Status Badge */}
+        <div className={cn(
+          "flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3 transition-colors duration-300",
+          isBreak ? "bg-accent-pink" : "bg-accent-blue"
+        )}>
+          {isBreak ? (
+            <Coffee className="w-3 h-3 text-primary" />
+          ) : (
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+          )}
+          <span className="text-xs font-medium">
+            {isBreak ? "Nghỉ" : "Học"} · {currentRound}/{rounds}
+          </span>
+        </div>
+
+        {/* Timer Circle */}
+        <div className="relative w-24 h-24 mb-3">
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              cx="48"
+              cy="48"
+              r="40"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              className="text-border/50"
+            />
+            <circle
+              cx="48"
+              cy="48"
+              r="40"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              strokeLinecap="round"
+              className={cn(
+                "transition-all duration-1000",
+                isBreak ? "text-accent-pink" : "text-primary"
+              )}
+              style={{
+                strokeDasharray: compactCircumference,
+                strokeDashoffset: compactStrokeDashoffset
+              }}
+            />
+          </svg>
+          
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-xl font-medium tracking-tight text-foreground">
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={resetTimer}
+            className="w-8 h-8 rounded-full"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </Button>
+          
+          <Button
+            size="icon"
+            onClick={toggleTimer}
+            className={cn(
+              "w-10 h-10 rounded-full",
+              isRunning ? "bg-accent-pink hover:bg-accent-pink/80" : ""
+            )}
+          >
+            {isRunning ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4 ml-0.5" />
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Full version
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
@@ -89,7 +181,6 @@ export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerPro
       {/* Timer Circle */}
       <div className="relative w-64 h-64 mb-8">
         <svg className="w-full h-full transform -rotate-90">
-          {/* Background circle */}
           <circle
             cx="128"
             cy="128"
@@ -99,7 +190,6 @@ export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerPro
             fill="none"
             className="text-border"
           />
-          {/* Progress circle */}
           <circle
             cx="128"
             cy="128"
@@ -119,7 +209,6 @@ export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerPro
           />
         </svg>
         
-        {/* Timer Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-5xl font-light tracking-tight text-foreground">
             {formatTime(timeLeft)}
@@ -153,7 +242,7 @@ export function PomodoroTimer({ studyTime, breakTime, rounds }: PomodoroTimerPro
           )}
         </Button>
         
-        <div className="w-12 h-12" /> {/* Spacer for symmetry */}
+        <div className="w-12 h-12" />
       </div>
     </div>
   );
