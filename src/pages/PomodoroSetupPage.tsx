@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, Coffee, Repeat } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Coffee, Repeat, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 const studyTimeOptions = [15, 25, 30, 45, 60];
 const breakTimeOptions = [5, 10, 15];
@@ -17,6 +18,25 @@ export default function PomodoroSetupPage() {
   const [studyTime, setStudyTime] = useState(userData.pomodoroSettings.studyTime);
   const [breakTime, setBreakTime] = useState(userData.pomodoroSettings.breakTime);
   const [rounds, setRounds] = useState(userData.pomodoroSettings.rounds);
+  
+  const [customStudyTime, setCustomStudyTime] = useState(false);
+  const [customBreakTime, setCustomBreakTime] = useState(false);
+  const [customRounds, setCustomRounds] = useState(false);
+
+  const handleStudyTimeSelect = (time: number) => {
+    setStudyTime(time);
+    setCustomStudyTime(false);
+  };
+
+  const handleBreakTimeSelect = (time: number) => {
+    setBreakTime(time);
+    setCustomBreakTime(false);
+  };
+
+  const handleRoundsSelect = (r: number) => {
+    setRounds(r);
+    setCustomRounds(false);
+  };
 
   const handleStart = () => {
     setPomodoroSettings({ studyTime, breakTime, rounds });
@@ -26,6 +46,10 @@ export default function PomodoroSetupPage() {
   const totalTime = (studyTime + breakTime) * rounds - breakTime;
   const hours = Math.floor(totalTime / 60);
   const minutes = totalTime % 60;
+
+  const isCustomStudyTime = customStudyTime || !studyTimeOptions.includes(studyTime);
+  const isCustomBreakTime = customBreakTime || !breakTimeOptions.includes(breakTime);
+  const isCustomRounds = customRounds || !roundOptions.includes(rounds);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -66,10 +90,10 @@ export default function PomodoroSetupPage() {
               {studyTimeOptions.map((time) => (
                 <button
                   key={time}
-                  onClick={() => setStudyTime(time)}
+                  onClick={() => handleStudyTimeSelect(time)}
                   className={cn(
                     "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                    studyTime === time
+                    studyTime === time && !isCustomStudyTime
                       ? "bg-primary text-primary-foreground shadow-soft"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
                   )}
@@ -77,7 +101,32 @@ export default function PomodoroSetupPage() {
                   {time} phút
                 </button>
               ))}
+              <button
+                onClick={() => setCustomStudyTime(true)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1",
+                  isCustomStudyTime
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
+                )}
+              >
+                <Settings2 className="w-3 h-3" />
+                Tùy chỉnh
+              </button>
             </div>
+            {isCustomStudyTime && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <Input
+                  type="number"
+                  min={1}
+                  max={180}
+                  value={studyTime}
+                  onChange={(e) => setStudyTime(Math.max(1, Math.min(180, parseInt(e.target.value) || 1)))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">phút</span>
+              </div>
+            )}
           </div>
 
           {/* Break Time */}
@@ -90,10 +139,10 @@ export default function PomodoroSetupPage() {
               {breakTimeOptions.map((time) => (
                 <button
                   key={time}
-                  onClick={() => setBreakTime(time)}
+                  onClick={() => handleBreakTimeSelect(time)}
                   className={cn(
                     "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                    breakTime === time
+                    breakTime === time && !isCustomBreakTime
                       ? "bg-accent-pink text-foreground shadow-soft"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-pink/50"
                   )}
@@ -101,7 +150,32 @@ export default function PomodoroSetupPage() {
                   {time} phút
                 </button>
               ))}
+              <button
+                onClick={() => setCustomBreakTime(true)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1",
+                  isCustomBreakTime
+                    ? "bg-accent-pink text-foreground shadow-soft"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent-pink/50"
+                )}
+              >
+                <Settings2 className="w-3 h-3" />
+                Tùy chỉnh
+              </button>
             </div>
+            {isCustomBreakTime && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <Input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={breakTime}
+                  onChange={(e) => setBreakTime(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">phút</span>
+              </div>
+            )}
           </div>
 
           {/* Rounds */}
@@ -114,10 +188,10 @@ export default function PomodoroSetupPage() {
               {roundOptions.map((r) => (
                 <button
                   key={r}
-                  onClick={() => setRounds(r)}
+                  onClick={() => handleRoundsSelect(r)}
                   className={cn(
                     "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                    rounds === r
+                    rounds === r && !isCustomRounds
                       ? "bg-primary text-primary-foreground shadow-soft"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
                   )}
@@ -125,7 +199,32 @@ export default function PomodoroSetupPage() {
                   {r} vòng
                 </button>
               ))}
+              <button
+                onClick={() => setCustomRounds(true)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1",
+                  isCustomRounds
+                    ? "bg-primary text-primary-foreground shadow-soft"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
+                )}
+              >
+                <Settings2 className="w-3 h-3" />
+                Tùy chỉnh
+              </button>
             </div>
+            {isCustomRounds && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={rounds}
+                  onChange={(e) => setRounds(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">vòng</span>
+              </div>
+            )}
           </div>
 
           {/* Summary Card */}
