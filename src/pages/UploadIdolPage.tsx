@@ -109,7 +109,7 @@ export default function UploadIdolPage() {
           size="lg"
           className="w-full"
           onClick={handleContinue}
-          disabled={!localIdolImage}
+          disabled={!localIdolImage || (!localUserImage)}
         >
           Tiếp tục
           <ArrowRight className="w-4 h-4 ml-2" />
