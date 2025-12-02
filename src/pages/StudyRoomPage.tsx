@@ -79,13 +79,14 @@ export default function StudyRoomPage() {
           )}
         </div>
 
-        {/* Timer overlay - top right corner */}
+        {/* Timer overlay - draggable */}
         <div className="absolute top-4 right-4 z-10">
           <PomodoroTimer
             studyTime={userData.pomodoroSettings.studyTime}
             breakTime={userData.pomodoroSettings.breakTime}
             rounds={userData.pomodoroSettings.rounds}
             compact
+            draggable
           />
         </div>
       </main>

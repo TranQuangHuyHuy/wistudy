@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -8,13 +8,20 @@ interface PomodoroTimerProps {
   breakTime: number;
   rounds: number;
   compact?: boolean;
+  draggable?: boolean;
 }
 
-export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false }: PomodoroTimerProps) {
+export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, draggable = false }: PomodoroTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(studyTime * 60);
+  
+  // Drag state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef({ x: 0, y: 0 });
 
   const totalTime = isBreak ? breakTime * 60 : studyTime * 60;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -44,6 +51,61 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false }:
     return () => clearInterval(interval);
   }, [isRunning, timeLeft, isBreak, currentRound, rounds, studyTime, breakTime]);
 
+  // Drag handlers
+  useEffect(() => {
+    if (!draggable) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      setPosition(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - dragStartRef.current.x;
+      const deltaY = touch.clientY - dragStartRef.current.y;
+      setPosition(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
+      dragStartRef.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, draggable]);
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!draggable) return;
+    e.preventDefault();
+    setIsDragging(true);
+    if ('touches' in e) {
+      dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else {
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+    }
+  };
+
   const toggleTimer = useCallback(() => {
     setIsRunning(prev => !prev);
   }, []);
@@ -63,44 +125,54 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false }:
 
   // Compact version for overlay
   if (compact) {
-    const compactCircumference = 2 * Math.PI * 40;
+    const compactCircumference = 2 * Math.PI * 28;
     const compactStrokeDashoffset = compactCircumference - (progress / 100) * compactCircumference;
 
     return (
-      <div className="flex flex-col items-center bg-background/80 backdrop-blur-md rounded-2xl p-4 shadow-lg">
+      <div 
+        ref={dragRef}
+        className={cn(
+          "flex flex-col items-center bg-background/85 backdrop-blur-md rounded-xl p-2.5 shadow-lg select-none",
+          draggable && "cursor-grab",
+          isDragging && "cursor-grabbing"
+        )}
+        style={draggable ? { transform: `translate(${position.x}px, ${position.y}px)` } : undefined}
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
+      >
         {/* Status Badge */}
         <div className={cn(
-          "flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3 transition-colors duration-300",
+          "flex items-center gap-1 px-2 py-0.5 rounded-full mb-2 transition-colors duration-300",
           isBreak ? "bg-accent-pink" : "bg-accent-blue"
         )}>
           {isBreak ? (
-            <Coffee className="w-3 h-3 text-primary" />
+            <Coffee className="w-2.5 h-2.5 text-primary" />
           ) : (
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+            <span className="w-1 h-1 rounded-full bg-primary animate-pulse-soft" />
           )}
-          <span className="text-xs font-medium">
+          <span className="text-[10px] font-medium">
             {isBreak ? "Nghỉ" : "Học"} · {currentRound}/{rounds}
           </span>
         </div>
 
         {/* Timer Circle */}
-        <div className="relative w-24 h-24 mb-3">
+        <div className="relative w-16 h-16 mb-2">
           <svg className="w-full h-full transform -rotate-90">
             <circle
-              cx="48"
-              cy="48"
-              r="40"
+              cx="32"
+              cy="32"
+              r="28"
               stroke="currentColor"
-              strokeWidth="4"
+              strokeWidth="3"
               fill="none"
               className="text-border/50"
             />
             <circle
-              cx="48"
-              cy="48"
-              r="40"
+              cx="32"
+              cy="32"
+              r="28"
               stroke="currentColor"
-              strokeWidth="4"
+              strokeWidth="3"
               fill="none"
               strokeLinecap="round"
               className={cn(
@@ -115,35 +187,35 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false }:
           </svg>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-medium tracking-tight text-foreground">
+            <span className="text-sm font-medium tracking-tight text-foreground">
               {formatTime(timeLeft)}
             </span>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Button
             variant="secondary"
             size="icon"
-            onClick={resetTimer}
-            className="w-8 h-8 rounded-full"
+            onClick={(e) => { e.stopPropagation(); resetTimer(); }}
+            className="w-6 h-6 rounded-full"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3 h-3" />
           </Button>
           
           <Button
             size="icon"
-            onClick={toggleTimer}
+            onClick={(e) => { e.stopPropagation(); toggleTimer(); }}
             className={cn(
-              "w-10 h-10 rounded-full",
+              "w-8 h-8 rounded-full",
               isRunning ? "bg-accent-pink hover:bg-accent-pink/80" : ""
             )}
           >
             {isRunning ? (
-              <Pause className="w-4 h-4" />
+              <Pause className="w-3.5 h-3.5" />
             ) : (
-              <Play className="w-4 h-4 ml-0.5" />
+              <Play className="w-3.5 h-3.5 ml-0.5" />
             )}
           </Button>
         </div>
