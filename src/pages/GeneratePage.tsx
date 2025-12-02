@@ -15,9 +15,28 @@ export default function GeneratePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(userData.generatedImage);
   const hasGeneratedRef = useRef(false);
+  const [userName, setUserName] = useState<string>('bạn');
 
   const selectedBg = backgrounds.find(b => b.id === userData.selectedBackground);
   const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (profile?.full_name) {
+          const nameParts = profile.full_name.trim().split(' ');
+          setUserName(nameParts[nameParts.length - 1]);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
 
   const generateImage = async () => {
     if (!userData.idolImage) {
@@ -163,7 +182,7 @@ export default function GeneratePage() {
           {/* Info Card */}
           <div className="p-4 bg-accent-blue/50 rounded-xl">
             <p className="text-sm text-foreground">
-              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, bạn có thể tạo lại nhiều lần.
+              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại nhiều lần.
             </p>
           </div>
         </div>
