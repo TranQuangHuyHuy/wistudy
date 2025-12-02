@@ -137,12 +137,6 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomStudyTime && (
                 <div className="flex items-center gap-2 animate-fade-in">
-                  <button
-                    onClick={() => setStudyTime(Math.max(1, studyTime - 5))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    −
-                  </button>
                   <Input
                     type="number"
                     min={1}
@@ -161,12 +155,6 @@ export default function PomodoroSetupPage() {
                     }}
                     className="w-20 text-center"
                   />
-                  <button
-                    onClick={() => setStudyTime(Math.min(180, studyTime + 5))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    +
-                  </button>
                   <span className="text-sm text-muted-foreground">phút</span>
                 </div>
               )}
@@ -210,12 +198,6 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomBreakTime && (
                 <div className="flex items-center gap-2 animate-fade-in">
-                  <button
-                    onClick={() => setBreakTime(Math.max(1, breakTime - 1))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-pink/50 text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    −
-                  </button>
                   <Input
                     type="number"
                     min={1}
@@ -234,12 +216,6 @@ export default function PomodoroSetupPage() {
                     }}
                     className="w-20 text-center"
                   />
-                  <button
-                    onClick={() => setBreakTime(Math.min(60, breakTime + 1))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-pink/50 text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    +
-                  </button>
                   <span className="text-sm text-muted-foreground">phút</span>
                 </div>
               )}
@@ -283,12 +259,6 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomRounds && (
                 <div className="flex items-center gap-2 animate-fade-in">
-                  <button
-                    onClick={() => setRounds(Math.max(1, rounds - 1))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    −
-                  </button>
                   <Input
                     type="number"
                     min={1}
@@ -307,12 +277,6 @@ export default function PomodoroSetupPage() {
                     }}
                     className="w-20 text-center"
                   />
-                  <button
-                    onClick={() => setRounds(Math.min(20, rounds + 1))}
-                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
-                  >
-                    +
-                  </button>
                   <span className="text-sm text-muted-foreground">vòng</span>
                 </div>
               )}
