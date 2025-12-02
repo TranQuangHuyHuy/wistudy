@@ -8,7 +8,7 @@ import { useWiStudy } from '@/contexts/WiStudyContext';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
-const studyTimeOptions = [15, 30, 45, 60];
+const studyTimeOptions = [15, 30, 45, 60, 90];
 const breakTimeOptions = [5, 10, 15];
 const roundOptions = [2, 4, 6, 8];
 
