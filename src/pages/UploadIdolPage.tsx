@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, UserX, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -12,14 +12,26 @@ export default function UploadIdolPage() {
   const navigate = useNavigate();
   const { userData, setIdolImage } = useWiStudy();
   const [localIdolImage, setLocalIdolImage] = useState<string | null>(userData.idolImage);
+  const [isAnonymous, setIsAnonymous] = useState(userData.idolImage === 'anonymous');
 
   const handleContinue = () => {
-    if (!localIdolImage) {
-      toast.error('Vui lòng tải ảnh lên');
+    if (!isAnonymous && !localIdolImage) {
+      toast.error('Vui lòng tải ảnh lên hoặc chọn chế độ ẩn danh');
       return;
     }
-    setIdolImage(localIdolImage);
+    setIdolImage(isAnonymous ? 'anonymous' : localIdolImage);
     navigate('/choose-background');
+  };
+
+  const handleToggleAnonymous = () => {
+    if (!isAnonymous) {
+      setIsAnonymous(true);
+      setLocalIdolImage(null);
+      toast.success('Đã bật chế độ ẩn danh - AI sẽ tạo người ngẫu nhiên');
+    } else {
+      setIsAnonymous(false);
+      toast.info('Đã tắt chế độ ẩn danh');
+    }
   };
 
   return (
@@ -51,23 +63,59 @@ export default function UploadIdolPage() {
             </p>
           </div>
 
-          {/* Upload Areas */}
-          <div className="space-y-6">
-            <ImageUploader
-              image={localIdolImage}
-              onImageChange={setLocalIdolImage}
-              label="Ảnh của bạn"
-              hint="Chọn ảnh rõ mặt, chính diện"
-              required
-            />
-
-            {/* Lưu ý về chất lượng ảnh */}
-            <div className="p-4 bg-secondary/50 rounded-xl border border-border">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-medium text-foreground">💡 Lưu ý:</span> Để có kết quả tốt nhất, hãy chọn ảnh rõ nét, chính diện khuôn mặt, ánh sáng tốt và không bị che khuất.
+          {/* Anonymous Mode Toggle */}
+          <button
+            onClick={handleToggleAnonymous}
+            className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+              isAnonymous
+                ? 'border-primary bg-primary/10'
+                : 'border-border bg-card hover:border-muted-foreground'
+            }`}
+          >
+            <div className={`p-2 rounded-full ${isAnonymous ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+              {isAnonymous ? <UserX className="w-5 h-5" /> : <User className="w-5 h-5" />}
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-medium text-foreground">
+                {isAnonymous ? 'Chế độ ẩn danh đang bật' : 'Chế độ ẩn danh'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isAnonymous ? 'AI sẽ tạo người ngẫu nhiên' : 'Bật để AI tạo người ngẫu nhiên thay vì dùng ảnh của bạn'}
               </p>
             </div>
-          </div>
+            <div className={`w-12 h-6 rounded-full transition-colors relative ${isAnonymous ? 'bg-primary' : 'bg-muted'}`}>
+              <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${isAnonymous ? 'translate-x-7' : 'translate-x-1'}`} />
+            </div>
+          </button>
+
+          {/* Upload Areas - Only show when not anonymous */}
+          {!isAnonymous && (
+            <div className="space-y-6">
+              <ImageUploader
+                image={localIdolImage}
+                onImageChange={setLocalIdolImage}
+                label="Ảnh của bạn"
+                hint="Chọn ảnh rõ mặt, chính diện"
+                required
+              />
+
+              {/* Lưu ý về chất lượng ảnh */}
+              <div className="p-4 bg-secondary/50 rounded-xl border border-border">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  <span className="font-medium text-foreground">💡 Lưu ý:</span> Để có kết quả tốt nhất, hãy chọn ảnh rõ nét, chính diện khuôn mặt, ánh sáng tốt và không bị che khuất.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Anonymous Mode Info */}
+          {isAnonymous && (
+            <div className="p-4 bg-accent-blue/50 rounded-xl">
+              <p className="text-sm text-foreground">
+                🎭 <strong>Chế độ ẩn danh:</strong> AI sẽ tạo một nhân vật ngẫu nhiên đang học bài với background bạn chọn.
+              </p>
+            </div>
+          )}
         </div>
       </main>
 
@@ -77,7 +125,7 @@ export default function UploadIdolPage() {
           size="lg"
           className="w-full"
           onClick={handleContinue}
-          disabled={!localIdolImage}
+          disabled={!isAnonymous && !localIdolImage}
         >
           Tiếp tục
           <ArrowRight className="w-4 h-4 ml-2" />

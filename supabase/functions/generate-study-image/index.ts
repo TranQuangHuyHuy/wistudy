@@ -20,8 +20,29 @@ serve(async (req) => {
       throw new Error("No API key configured");
     }
 
-    // Build prompt - ask to create image inspired by the reference
-    const prompt = `Look at this reference image of a person. Create a new artistic illustration showing this same person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
+    const isAnonymous = !idolImageBase64 || idolImageBase64 === 'anonymous';
+    
+    let prompt: string;
+    const messageContent: any[] = [];
+
+    if (isAnonymous) {
+      // Anonymous mode - generate a random person
+      prompt = `Create a beautiful artistic illustration of a person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
+
+Requirements:
+- Create a unique, attractive character (can be male or female, any ethnicity)
+- Show them sitting at a desk, deeply focused on studying with books and notes
+- Include cozy study elements: desk lamp, books, coffee/tea cup, plants, stationery
+- Soft, warm lighting atmosphere with gentle shadows
+- Pastel colors, dreamy lo-fi aesthetic similar to study music video backgrounds
+- Anime/illustration art style
+- Aspect ratio 4:3
+- The character should look peaceful and focused`;
+      
+      messageContent.push({ type: "text", text: prompt });
+    } else {
+      // With reference image - create based on the person
+      prompt = `Look at this reference image of a person. Create a new artistic illustration showing this same person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
 
 Requirements:
 - Draw the person from the reference image in an artistic anime/illustration style
@@ -32,14 +53,7 @@ Requirements:
 - Aspect ratio 4:3
 - The person should look similar to the reference but in illustration style`;
 
-    console.log("Using Lovable AI with gemini-3-pro-image-preview...");
-    
-    const messageContent: any[] = [
-      { type: "text", text: prompt }
-    ];
-
-    // Add idol image as reference
-    if (idolImageBase64) {
+      messageContent.push({ type: "text", text: prompt });
       messageContent.push({
         type: "image_url",
         image_url: {
@@ -47,6 +61,8 @@ Requirements:
         }
       });
     }
+
+    console.log(`Using Lovable AI (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -96,7 +112,9 @@ Requirements:
       if (textResponse.toLowerCase().includes("can't") || textResponse.toLowerCase().includes("cannot")) {
         return new Response(
           JSON.stringify({ 
-            error: "AI không thể tạo ảnh với yêu cầu này. Hãy thử ảnh idol khác.",
+            error: isAnonymous 
+              ? "AI không thể tạo ảnh. Vui lòng thử lại."
+              : "AI không thể tạo ảnh với yêu cầu này. Hãy thử ảnh khác hoặc dùng chế độ ẩn danh.",
             details: textResponse
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -115,7 +133,9 @@ Requirements:
     return new Response(
       JSON.stringify({ 
         imageUrl: generatedImageUrl,
-        message: "Đã tạo ảnh học cùng idol thành công!"
+        message: isAnonymous 
+          ? "Đã tạo không gian học tập thành công!" 
+          : "Đã tạo ảnh thành công!"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
