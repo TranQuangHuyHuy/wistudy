@@ -9,6 +9,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import UploadIdolPage from "./pages/UploadIdolPage";
+import SettingsPage from "./pages/SettingsPage";
 import ChooseBackgroundPage from "./pages/ChooseBackgroundPage";
 import GeneratePage from "./pages/GeneratePage";
 import PomodoroSetupPage from "./pages/PomodoroSetupPage";
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/generate" element={<GeneratePage />} />
                 <Route path="/pomodoro-setup" element={<PomodoroSetupPage />} />
                 <Route path="/study-room" element={<StudyRoomPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
