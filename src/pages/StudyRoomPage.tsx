@@ -121,13 +121,13 @@ export default function StudyRoomPage() {
             <Logo size="sm" />
           </div>
 
-          {/* Exit button - closer to logo */}
+          {/* Exit button - below logo */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="absolute top-4 left-28 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+                className="absolute top-16 left-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
               >
                 <X className="w-4 h-4" />
               </Button>
