@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ export default function GeneratePage() {
   const { userData, setGeneratedImage } = useWiStudy();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(userData.generatedImage);
+  const hasGeneratedRef = useRef(false);
 
   const selectedBg = backgrounds.find(b => b.id === userData.selectedBackground);
   const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
@@ -67,7 +68,9 @@ export default function GeneratePage() {
   };
 
   useEffect(() => {
-    if (!generatedPreview && userData.idolImage) {
+    // Chỉ tự động gen 1 lần khi chưa có ảnh
+    if (!generatedPreview && userData.idolImage && !hasGeneratedRef.current) {
+      hasGeneratedRef.current = true;
       generateImage();
     }
   }, []);
