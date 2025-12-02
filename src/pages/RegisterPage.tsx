@@ -4,21 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/wistudy/Logo';
-import { BookOpen, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  fullName: z.string().trim().min(2, { message: "Họ tên tối thiểu 2 ký tự" }).max(100),
   email: z.string().trim().email({ message: "Email không hợp lệ" }),
-  password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
+  password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" }),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"]
 });
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -36,10 +43,10 @@ export default function LoginPage() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validation = loginSchema.safeParse({ email, password });
+    const validation = registerSchema.safeParse({ fullName, email, password, confirmPassword });
     if (!validation.success) {
       toast.error(validation.error.errors[0].message);
       return;
@@ -47,16 +54,26 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
-        password
-      });
-      if (error) {
-        if (error.message.includes('Invalid login')) {
-          toast.error('Email hoặc mật khẩu không đúng');
-        } else {
-          toast.error('Đăng nhập thất bại: ' + error.message);
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: fullName
+          }
         }
+      });
+      
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.');
+        } else {
+          toast.error('Đăng ký thất bại: ' + error.message);
+        }
+      } else {
+        toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+        navigate('/');
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
@@ -76,18 +93,29 @@ export default function LoginPage() {
           {/* Hero */}
           <div className="text-center space-y-3">
             <div className="inline-flex p-3 bg-accent-blue rounded-2xl mb-2">
-              <BookOpen className="w-10 h-10 text-primary" />
+              <UserPlus className="w-10 h-10 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">
-              Đăng nhập
+              Đăng ký tài khoản
             </h1>
             <p className="text-muted-foreground text-sm">
-              Đăng nhập để tiếp tục sử dụng WiStudy
+              Tạo tài khoản để bắt đầu sử dụng WiStudy
             </p>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          {/* Register Form */}
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Họ và tên</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Nguyễn Văn A"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -104,9 +132,21 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••"
+                placeholder="Tối thiểu 6 ký tự"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Nhập lại mật khẩu"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
               />
@@ -117,14 +157,14 @@ export default function LoginPage() {
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Đăng nhập
+              Đăng ký
             </Button>
           </form>
 
           <p className="text-sm text-center text-muted-foreground">
-            Chưa có tài khoản?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">
-              Đăng ký ngay
+            Đã có tài khoản?{' '}
+            <Link to="/" className="text-primary font-medium hover:underline">
+              Đăng nhập
             </Link>
           </p>
         </div>

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WiStudyProvider } from "@/contexts/WiStudyContext";
 import Index from "./pages/Index";
+import RegisterPage from "./pages/RegisterPage";
 import UploadIdolPage from "./pages/UploadIdolPage";
 import ChooseBackgroundPage from "./pages/ChooseBackgroundPage";
 import GeneratePage from "./pages/GeneratePage";
@@ -26,6 +27,7 @@ function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/upload-idol" element={<UploadIdolPage />} />
                 <Route path="/choose-background" element={<ChooseBackgroundPage />} />
                 <Route path="/generate" element={<GeneratePage />} />
