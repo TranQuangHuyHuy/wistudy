@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,26 +15,30 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <WiStudyProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/upload-idol" element={<UploadIdolPage />} />
-            <Route path="/choose-background" element={<ChooseBackgroundPage />} />
-            <Route path="/generate" element={<GeneratePage />} />
-            <Route path="/pomodoro-setup" element={<PomodoroSetupPage />} />
-            <Route path="/study-room" element={<StudyRoomPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </WiStudyProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WiStudyProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/upload-idol" element={<UploadIdolPage />} />
+                <Route path="/choose-background" element={<ChooseBackgroundPage />} />
+                <Route path="/generate" element={<GeneratePage />} />
+                <Route path="/pomodoro-setup" element={<PomodoroSetupPage />} />
+                <Route path="/study-room" element={<StudyRoomPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </WiStudyProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+}
 
 export default App;
