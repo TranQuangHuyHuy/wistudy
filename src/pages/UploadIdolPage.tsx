@@ -30,6 +30,7 @@ export default function UploadIdolPage() {
       toast.success('Đã bật chế độ ẩn danh - AI sẽ tạo người ngẫu nhiên');
     } else {
       setIsAnonymous(false);
+      setLocalIdolImage(null);
       toast.info('Đã tắt chế độ ẩn danh');
     }
   };
