@@ -10,23 +10,16 @@ import { toast } from 'sonner';
 
 export default function UploadIdolPage() {
   const navigate = useNavigate();
-  const { userData, setIdolImage, setUserImage } = useWiStudy();
+  const { userData, setIdolImage } = useWiStudy();
   const [localIdolImage, setLocalIdolImage] = useState<string | null>(userData.idolImage);
-  const [localUserImage, setLocalUserImage] = useState<string | null>(userData.userImage);
 
   const handleContinue = () => {
     if (!localIdolImage) {
-      toast.error('Vui lòng tải ảnh idol lên');
+      toast.error('Vui lòng tải ảnh lên');
       return;
     }
     setIdolImage(localIdolImage);
-    setUserImage(localUserImage);
     navigate('/choose-background');
-  };
-
-  const handleAnonymous = () => {
-    setLocalUserImage('anonymous');
-    toast.success('Đã chọn chế độ ẩn danh');
   };
 
   return (
@@ -63,35 +56,10 @@ export default function UploadIdolPage() {
             <ImageUploader
               image={localIdolImage}
               onImageChange={setLocalIdolImage}
-              label="Ảnh Idol"
+              label="Ảnh của bạn"
               hint="Chọn ảnh rõ mặt, chính diện"
               required
             />
-
-            <ImageUploader
-              image={localUserImage === 'anonymous' ? null : localUserImage}
-              onImageChange={setLocalUserImage}
-              label="Ảnh của bạn"
-              hint="Tùy chọn - để tạo ảnh học cùng"
-              showAnonymousOption={localUserImage !== 'anonymous'}
-              onAnonymousSelect={handleAnonymous}
-            />
-            
-            {localUserImage === 'anonymous' && (
-              <div className="flex items-center justify-between gap-2 p-3 bg-accent-blue rounded-xl text-sm">
-                <div className="flex items-center gap-2">
-                  <span>✓</span>
-                  <span>Đã chọn chế độ ẩn danh</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setLocalUserImage(null)}
-                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  Bỏ chọn
-                </button>
-              </div>
-            )}
 
             {/* Lưu ý về chất lượng ảnh */}
             <div className="p-4 bg-secondary/50 rounded-xl border border-border">
@@ -109,7 +77,7 @@ export default function UploadIdolPage() {
           size="lg"
           className="w-full"
           onClick={handleContinue}
-          disabled={!localIdolImage || (!localUserImage)}
+          disabled={!localIdolImage}
         >
           Tiếp tục
           <ArrowRight className="w-4 h-4 ml-2" />
