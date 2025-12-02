@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, Coffee, Repeat, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 const studyTimeOptions = [15, 30, 45, 60, 90];
 const breakTimeOptions = [5, 10, 15];
@@ -22,6 +23,25 @@ export default function PomodoroSetupPage() {
   const [customStudyTime, setCustomStudyTime] = useState(false);
   const [customBreakTime, setCustomBreakTime] = useState(false);
   const [customRounds, setCustomRounds] = useState(false);
+  const [userName, setUserName] = useState<string>('bạn');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (profile?.full_name) {
+          const nameParts = profile.full_name.trim().split(' ');
+          setUserName(nameParts[nameParts.length - 1]);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
 
   const handleStudyTimeSelect = (time: number) => {
     setStudyTime(time);
@@ -76,7 +96,7 @@ export default function PomodoroSetupPage() {
               Thiết lập Pomodoro
             </h1>
             <p className="text-muted-foreground text-sm">
-              Tùy chỉnh thời gian học phù hợp với bạn
+              Tùy chỉnh thời gian học phù hợp với {userName}
             </p>
           </div>
 
