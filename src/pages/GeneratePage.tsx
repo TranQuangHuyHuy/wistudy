@@ -7,6 +7,7 @@ import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function GeneratePage() {
   const navigate = useNavigate();
@@ -15,20 +16,54 @@ export default function GeneratePage() {
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(userData.generatedImage);
 
   const selectedBg = backgrounds.find(b => b.id === userData.selectedBackground);
+  const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
 
-  // Simulate image generation (will be replaced with actual AI call)
   const generateImage = async () => {
+    if (!userData.idolImage) {
+      toast.error('Vui lòng tải ảnh idol lên');
+      navigate('/upload-idol');
+      return;
+    }
+
     setIsGenerating(true);
-    toast.info('Đang tạo ảnh...');
+    toast.info('Đang tạo ảnh với AI...');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const backgroundPrompt = selectedBg?.prompt || 'cozy modern study room with warm lighting';
+      
+      const { data, error } = await supabase.functions.invoke('generate-study-image', {
+        body: {
+          idolImageBase64: userData.idolImage,
+          userImageBase64: userData.userImage !== 'anonymous' ? userData.userImage : null,
+          backgroundPrompt
+        }
+      });
 
-    // For now, use the idol image as preview
-    // This will be replaced with actual AI-generated image
-    setGeneratedPreview(userData.idolImage);
-    setIsGenerating(false);
-    toast.success('Đã tạo ảnh thành công!');
+      if (error) {
+        console.error('Function error:', error);
+        throw new Error(error.message || 'Không thể tạo ảnh');
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.imageUrl) {
+        setGeneratedPreview(data.imageUrl);
+        toast.success('Đã tạo ảnh thành công!');
+      } else {
+        // Fallback: use idol image as preview if AI fails
+        setGeneratedPreview(userData.idolImage);
+        toast.info('Đã sử dụng ảnh idol làm preview');
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      // Fallback to idol image
+      setGeneratedPreview(userData.idolImage);
+      toast.error(error instanceof Error ? error.message : 'Có lỗi xảy ra, đã sử dụng ảnh idol');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   useEffect(() => {
@@ -75,18 +110,19 @@ export default function GeneratePage() {
               Ảnh học cùng Idol
             </h1>
             <p className="text-muted-foreground text-sm">
-              {selectedBg ? `Background: ${selectedBg.nameVi}` : 'Đang tạo ảnh...'}
+              {selectedBg ? `Background: ${selectedBg.nameVi}` : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
             </p>
           </div>
 
           {/* Generated Image Preview */}
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-secondary border border-border">
             {isGenerating ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-accent-blue/30 to-accent-pink/30">
                 <div className="p-4 bg-accent-blue rounded-full mb-4 animate-pulse">
                   <Sparkles className="w-8 h-8 text-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground">Đang tạo ảnh với AI...</p>
+                <p className="text-sm text-foreground font-medium">Đang tạo ảnh với AI...</p>
+                <p className="text-xs text-muted-foreground mt-1">Có thể mất 10-30 giây</p>
                 <div className="mt-4 flex gap-1">
                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -100,8 +136,11 @@ export default function GeneratePage() {
                 className="w-full h-full object-cover animate-scale-in"
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-muted-foreground">Nhấn để tạo ảnh</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <Button onClick={generateImage} variant="pastel">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Tạo ảnh
+                </Button>
               </div>
             )}
           </div>
