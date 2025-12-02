@@ -18,6 +18,19 @@ export default function GeneratePage() {
 
   const selectedBg = backgrounds.find(b => b.id === userData.selectedBackground);
   const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
+  
+  // Track previous inputs to detect changes
+  const prevInputsRef = useRef<string | null>(null);
+  const currentInputs = `${userData.idolImage}-${userData.selectedBackground}`;
+
+  // Reset when inputs change
+  useEffect(() => {
+    if (prevInputsRef.current && prevInputsRef.current !== currentInputs) {
+      setGeneratedPreview(null);
+      hasGeneratedRef.current = false;
+    }
+    prevInputsRef.current = currentInputs;
+  }, [currentInputs]);
 
   const generateImage = async () => {
     if (!userData.idolImage) {
