@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, UserX, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,31 @@ import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { ImageUploader } from '@/components/wistudy/ImageUploader';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function UploadIdolPage() {
   const navigate = useNavigate();
   const { userData, setIdolImage } = useWiStudy();
   const [localIdolImage, setLocalIdolImage] = useState<string | null>(userData.idolImage);
   const [isAnonymous, setIsAnonymous] = useState(userData.idolImage === 'anonymous');
+  const [userName, setUserName] = useState<string>('bạn');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (profile?.full_name) {
+          setUserName(profile.full_name);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
 
   const handleContinue = () => {
     if (!isAnonymous && !localIdolImage) {
@@ -59,7 +78,7 @@ export default function UploadIdolPage() {
           {/* Title */}
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold text-foreground">
-              Tải ảnh của bạn
+              Tải ảnh của {userName}
             </h1>
             <p className="text-muted-foreground text-sm">
               Tải ảnh để AI tạo không gian học tập
