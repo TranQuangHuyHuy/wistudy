@@ -73,16 +73,32 @@ export default function UploadIdolPage() {
               onImageChange={setLocalUserImage}
               label="Ảnh của bạn"
               hint="Tùy chọn - để tạo ảnh học cùng"
-              showAnonymousOption
+              showAnonymousOption={localUserImage !== 'anonymous'}
               onAnonymousSelect={handleAnonymous}
             />
             
             {localUserImage === 'anonymous' && (
-              <div className="flex items-center justify-center gap-2 p-3 bg-accent-blue rounded-xl text-sm">
-                <span>✓</span>
-                <span>Đã chọn chế độ ẩn danh</span>
+              <div className="flex items-center justify-between gap-2 p-3 bg-accent-blue rounded-xl text-sm">
+                <div className="flex items-center gap-2">
+                  <span>✓</span>
+                  <span>Đã chọn chế độ ẩn danh</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLocalUserImage(null)}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  Bỏ chọn
+                </button>
               </div>
             )}
+
+            {/* Lưu ý về chất lượng ảnh */}
+            <div className="p-4 bg-secondary/50 rounded-xl border border-border">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground">💡 Lưu ý:</span> Để có kết quả tốt nhất, hãy chọn ảnh rõ nét, chính diện khuôn mặt, ánh sáng tốt và không bị che khuất.
+              </p>
+            </div>
           </div>
         </div>
       </main>
