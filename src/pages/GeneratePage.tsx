@@ -110,7 +110,7 @@ export default function GeneratePage() {
           {/* Title */}
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold text-foreground">
-              Ảnh học cùng Idol
+              Ảnh học tập
             </h1>
             <p className="text-muted-foreground text-sm">
               {selectedBg ? `Background: ${selectedBg.nameVi}` : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
