@@ -41,16 +41,13 @@ export default function LandingPage() {
           </div>
 
           {/* CTA */}
-          <div className="space-y-4 pt-4">
+          <div className="pt-4">
             <Button asChild size="lg" className="w-full">
               <Link to="/login">
                 Bắt đầu ngay
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Miễn phí • Không cần thẻ tín dụng
-            </p>
           </div>
         </div>
       </main>
