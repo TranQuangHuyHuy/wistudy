@@ -26,7 +26,8 @@ export default function UploadIdolPage() {
           .eq('id', user.id)
           .single();
         if (profile?.full_name) {
-          setUserName(profile.full_name);
+          const nameParts = profile.full_name.trim().split(' ');
+          setUserName(nameParts[nameParts.length - 1]);
         }
       }
     };
