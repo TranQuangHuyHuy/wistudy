@@ -137,14 +137,36 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomStudyTime && (
                 <div className="flex items-center gap-2 animate-fade-in">
+                  <button
+                    onClick={() => setStudyTime(Math.max(1, studyTime - 5))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    −
+                  </button>
                   <Input
                     type="number"
                     min={1}
                     max={180}
-                    value={studyTime}
-                    onChange={(e) => setStudyTime(Math.max(1, Math.min(180, parseInt(e.target.value) || 1)))}
-                    className="w-20"
+                    value={studyTime || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setStudyTime(0);
+                      } else {
+                        setStudyTime(Math.min(180, parseInt(val) || 0));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (studyTime < 1) setStudyTime(1);
+                    }}
+                    className="w-20 text-center"
                   />
+                  <button
+                    onClick={() => setStudyTime(Math.min(180, studyTime + 5))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    +
+                  </button>
                   <span className="text-sm text-muted-foreground">phút</span>
                 </div>
               )}
@@ -188,14 +210,36 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomBreakTime && (
                 <div className="flex items-center gap-2 animate-fade-in">
+                  <button
+                    onClick={() => setBreakTime(Math.max(1, breakTime - 1))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-pink/50 text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    −
+                  </button>
                   <Input
                     type="number"
                     min={1}
                     max={60}
-                    value={breakTime}
-                    onChange={(e) => setBreakTime(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
-                    className="w-20"
+                    value={breakTime || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setBreakTime(0);
+                      } else {
+                        setBreakTime(Math.min(60, parseInt(val) || 0));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (breakTime < 1) setBreakTime(1);
+                    }}
+                    className="w-20 text-center"
                   />
+                  <button
+                    onClick={() => setBreakTime(Math.min(60, breakTime + 1))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-pink/50 text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    +
+                  </button>
                   <span className="text-sm text-muted-foreground">phút</span>
                 </div>
               )}
@@ -239,14 +283,36 @@ export default function PomodoroSetupPage() {
               </button>
               {isCustomRounds && (
                 <div className="flex items-center gap-2 animate-fade-in">
+                  <button
+                    onClick={() => setRounds(Math.max(1, rounds - 1))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    −
+                  </button>
                   <Input
                     type="number"
                     min={1}
                     max={20}
-                    value={rounds}
-                    onChange={(e) => setRounds(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                    className="w-20"
+                    value={rounds || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setRounds(0);
+                      } else {
+                        setRounds(Math.min(20, parseInt(val) || 0));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (rounds < 1) setRounds(1);
+                    }}
+                    className="w-20 text-center"
                   />
+                  <button
+                    onClick={() => setRounds(Math.min(20, rounds + 1))}
+                    className="w-10 h-10 rounded-xl bg-secondary hover:bg-accent-blue text-foreground font-bold text-lg flex items-center justify-center transition-colors"
+                  >
+                    +
+                  </button>
                   <span className="text-sm text-muted-foreground">vòng</span>
                 </div>
               )}
