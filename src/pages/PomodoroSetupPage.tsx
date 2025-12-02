@@ -101,6 +101,8 @@ export default function PomodoroSetupPage() {
                   {time} phút
                 </button>
               ))}
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setCustomStudyTime(true)}
                 className={cn(
@@ -113,20 +115,20 @@ export default function PomodoroSetupPage() {
                 <Settings2 className="w-3 h-3" />
                 Tùy chỉnh
               </button>
+              {isCustomStudyTime && (
+                <div className="flex items-center gap-2 animate-fade-in">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={180}
+                    value={studyTime}
+                    onChange={(e) => setStudyTime(Math.max(1, Math.min(180, parseInt(e.target.value) || 1)))}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">phút</span>
+                </div>
+              )}
             </div>
-            {isCustomStudyTime && (
-              <div className="flex items-center gap-2 animate-fade-in">
-                <Input
-                  type="number"
-                  min={1}
-                  max={180}
-                  value={studyTime}
-                  onChange={(e) => setStudyTime(Math.max(1, Math.min(180, parseInt(e.target.value) || 1)))}
-                  className="w-24"
-                />
-                <span className="text-sm text-muted-foreground">phút</span>
-              </div>
-            )}
           </div>
 
           {/* Break Time */}
@@ -150,6 +152,8 @@ export default function PomodoroSetupPage() {
                   {time} phút
                 </button>
               ))}
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setCustomBreakTime(true)}
                 className={cn(
@@ -162,20 +166,20 @@ export default function PomodoroSetupPage() {
                 <Settings2 className="w-3 h-3" />
                 Tùy chỉnh
               </button>
+              {isCustomBreakTime && (
+                <div className="flex items-center gap-2 animate-fade-in">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={breakTime}
+                    onChange={(e) => setBreakTime(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">phút</span>
+                </div>
+              )}
             </div>
-            {isCustomBreakTime && (
-              <div className="flex items-center gap-2 animate-fade-in">
-                <Input
-                  type="number"
-                  min={1}
-                  max={60}
-                  value={breakTime}
-                  onChange={(e) => setBreakTime(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
-                  className="w-24"
-                />
-                <span className="text-sm text-muted-foreground">phút</span>
-              </div>
-            )}
           </div>
 
           {/* Rounds */}
@@ -199,6 +203,8 @@ export default function PomodoroSetupPage() {
                   {r} vòng
                 </button>
               ))}
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setCustomRounds(true)}
                 className={cn(
@@ -211,20 +217,20 @@ export default function PomodoroSetupPage() {
                 <Settings2 className="w-3 h-3" />
                 Tùy chỉnh
               </button>
+              {isCustomRounds && (
+                <div className="flex items-center gap-2 animate-fade-in">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={rounds}
+                    onChange={(e) => setRounds(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">vòng</span>
+                </div>
+              )}
             </div>
-            {isCustomRounds && (
-              <div className="flex items-center gap-2 animate-fade-in">
-                <Input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={rounds}
-                  onChange={(e) => setRounds(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                  className="w-24"
-                />
-                <span className="text-sm text-muted-foreground">vòng</span>
-              </div>
-            )}
           </div>
 
           {/* Summary Card */}
