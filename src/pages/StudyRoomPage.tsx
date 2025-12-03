@@ -154,33 +154,33 @@ export default function StudyRoomPage() {
           {/* Timer toggle button */}
           <Button
             onClick={() => setShowTimer(!showTimer)}
-            className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+            className="absolute top-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
             size="icon"
           >
-            <Clock className="w-4 h-4" />
+            <Clock className="w-5 h-5" />
           </Button>
 
           {/* Music button - below timer button */}
           {userData.selectedMusic && (
             <Button
               onClick={() => setShowMusicPlayer(!showMusicPlayer)}
-              className="absolute top-16 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+              className="absolute top-[68px] right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
               size="icon"
             >
-              <Music2 className="w-4 h-4" />
+              <Music2 className="w-5 h-5" />
             </Button>
           )}
 
           {/* Fullscreen button - bottom right */}
           <Button
             onClick={toggleFullscreen}
-            className="absolute bottom-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+            className="absolute bottom-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
             size="icon"
           >
             {isFullscreen ? (
-              <Minimize className="w-4 h-4" />
+              <Minimize className="w-5 h-5" />
             ) : (
-              <Maximize className="w-4 h-4" />
+              <Maximize className="w-5 h-5" />
             )}
           </Button>
         </div>
