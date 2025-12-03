@@ -101,9 +101,9 @@ export default function MusicSelectionPage() {
   };
 
   const categories = [
-    { id: 'lofi' as MusicCategory, name: 'Lo-fi / Chill', icon: Headphones },
-    { id: 'classical' as MusicCategory, name: 'Classical / Piano', icon: Piano },
-    { id: 'ambient' as MusicCategory, name: 'Ambient / Nature', icon: TreePine },
+    { id: 'lofi' as MusicCategory, name: 'Lo-fi', icon: Headphones },
+    { id: 'classical' as MusicCategory, name: 'Piano', icon: Piano },
+    { id: 'ambient' as MusicCategory, name: 'Ambient', icon: TreePine },
   ];
 
   return (
