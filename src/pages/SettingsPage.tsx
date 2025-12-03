@@ -7,7 +7,7 @@ import { Logo } from '@/components/wistudy/Logo';
 import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useTheme } from 'next-themes';
+import { useThemeSync } from '@/hooks/useThemeSync';
 
 interface Profile {
   id: string;
@@ -18,7 +18,7 @@ interface Profile {
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useThemeSync();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
