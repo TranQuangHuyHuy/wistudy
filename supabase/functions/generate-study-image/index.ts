@@ -34,7 +34,7 @@ async function generateWithLovableAI(parts: any[], isAnonymous: boolean): Promis
 
   console.log(`Trying Lovable AI (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -46,8 +46,6 @@ async function generateWithLovableAI(parts: any[], isAnonymous: boolean): Promis
       modalities: ["image", "text"]
     }),
   });
-
-  return response;
 }
 
 async function generateWithGeminiAPI(parts: any[], isAnonymous: boolean): Promise<Response> {
@@ -58,7 +56,7 @@ async function generateWithGeminiAPI(parts: any[], isAnonymous: boolean): Promis
 
   console.log(`Trying Gemini API (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`, {
+  return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -70,8 +68,6 @@ async function generateWithGeminiAPI(parts: any[], isAnonymous: boolean): Promis
       }
     }),
   });
-
-  return response;
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -84,7 +80,7 @@ serve(async (req) => {
   }
 
   try {
-    const { idolImageBase64, userImageBase64, backgroundPrompt } = await req.json();
+    const { idolImageBase64, backgroundPrompt } = await req.json();
 
     const isAnonymous = !idolImageBase64 || idolImageBase64 === 'anonymous';
     
@@ -142,25 +138,34 @@ Requirements:
     let textResponse = "";
     let lastError: string | null = null;
 
-    // Try Lovable AI first with retries
+    // Try Gemini API first with retries
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const response = await generateWithLovableAI(parts, isAnonymous);
+        const response = await generateWithGeminiAPI(parts, isAnonymous);
         
         if (response.ok) {
           const data = await response.json();
-          console.log("Lovable AI response received");
+          console.log("Gemini API response received");
           
-          const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-          if (imageUrl) {
-            generatedImageUrl = imageUrl;
-            break;
+          const candidates = data.candidates;
+          if (candidates && candidates[0]?.content?.parts) {
+            for (const part of candidates[0].content.parts) {
+              if (part.text) {
+                textResponse = part.text;
+              }
+              if (part.inlineData) {
+                const mimeType = part.inlineData.mimeType || "image/png";
+                const base64Data = part.inlineData.data;
+                generatedImageUrl = `data:${mimeType};base64,${base64Data}`;
+              }
+            }
           }
-          textResponse = data.choices?.[0]?.message?.content || "";
-        } else if (response.status === 429 || response.status === 402) {
+          
+          if (generatedImageUrl) break;
+        } else if (response.status === 429) {
           const errorText = await response.text();
-          console.log(`Lovable AI rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${response.status}`);
-          lastError = `Lovable AI: ${response.status}`;
+          console.log(`Gemini API rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${errorText.substring(0, 200)}`);
+          lastError = "Gemini API rate limited";
           
           if (attempt < MAX_RETRIES - 1) {
             const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
@@ -169,48 +174,38 @@ Requirements:
           }
         } else {
           const errorText = await response.text();
-          console.error("Lovable AI error:", response.status, errorText);
-          lastError = `Lovable AI error: ${response.status}`;
+          console.error("Gemini API error:", response.status, errorText);
+          lastError = `Gemini API error: ${response.status}`;
           break;
         }
       } catch (e) {
-        console.error("Lovable AI exception:", e);
+        console.error("Gemini API exception:", e);
         lastError = e instanceof Error ? e.message : "Unknown error";
         break;
       }
     }
 
-    // Fallback to Gemini API if Lovable AI failed
+    // Fallback to Lovable AI if Gemini API failed
     if (!generatedImageUrl) {
-      console.log("Falling back to Gemini API...");
+      console.log("Falling back to Lovable AI...");
       
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-          const response = await generateWithGeminiAPI(parts, isAnonymous);
+          const response = await generateWithLovableAI(parts, isAnonymous);
           
           if (response.ok) {
             const data = await response.json();
-            console.log("Gemini API response received");
+            console.log("Lovable AI response received");
             
-            const candidates = data.candidates;
-            if (candidates && candidates[0]?.content?.parts) {
-              for (const part of candidates[0].content.parts) {
-                if (part.text) {
-                  textResponse = part.text;
-                }
-                if (part.inlineData) {
-                  const mimeType = part.inlineData.mimeType || "image/png";
-                  const base64Data = part.inlineData.data;
-                  generatedImageUrl = `data:${mimeType};base64,${base64Data}`;
-                }
-              }
+            const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+            if (imageUrl) {
+              generatedImageUrl = imageUrl;
+              break;
             }
-            
-            if (generatedImageUrl) break;
-          } else if (response.status === 429) {
-            const errorText = await response.text();
-            console.log(`Gemini API rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${errorText.substring(0, 200)}`);
-            lastError = "Gemini API rate limited";
+            textResponse = data.choices?.[0]?.message?.content || "";
+          } else if (response.status === 429 || response.status === 402) {
+            console.log(`Lovable AI rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${response.status}`);
+            lastError = `Lovable AI: ${response.status}`;
             
             if (attempt < MAX_RETRIES - 1) {
               const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
@@ -219,12 +214,12 @@ Requirements:
             }
           } else {
             const errorText = await response.text();
-            console.error("Gemini API error:", response.status, errorText);
-            lastError = `Gemini API error: ${response.status}`;
+            console.error("Lovable AI error:", response.status, errorText);
+            lastError = `Lovable AI error: ${response.status}`;
             break;
           }
         } catch (e) {
-          console.error("Gemini API exception:", e);
+          console.error("Lovable AI exception:", e);
           lastError = e instanceof Error ? e.message : "Unknown error";
           break;
         }
