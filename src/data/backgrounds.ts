@@ -10,10 +10,10 @@ export const backgrounds: Background[] = [
   },
   {
     id: 'classroom',
-    name: 'Classroom',
+    name: 'Home Study Room',
     nameVi: 'Phòng học',
     preview: '/backgrounds/classroom.jpg',
-    prompt: 'A bright modern classroom with rows of desks, large blackboard, educational posters on walls, natural sunlight through windows, academic study atmosphere'
+    prompt: 'A cozy home study room with a wooden desk near a large window, natural sunlight, bookshelf with books, desk lamp, potted plants, warm and inviting study atmosphere'
   },
   {
     id: 'rain',
