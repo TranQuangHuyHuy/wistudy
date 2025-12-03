@@ -44,15 +44,8 @@ export default function UploadIdolPage() {
   };
 
   const handleToggleAnonymous = () => {
-    if (!isAnonymous) {
-      setIsAnonymous(true);
-      setLocalIdolImage(null);
-      toast.success('Đã bật chế độ ẩn danh - AI sẽ tạo người ngẫu nhiên');
-    } else {
-      setIsAnonymous(false);
-      setLocalIdolImage(null);
-      toast.info('Đã tắt chế độ ẩn danh');
-    }
+    setIsAnonymous(!isAnonymous);
+    setLocalIdolImage(null);
   };
 
   return (
