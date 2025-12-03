@@ -9,9 +9,10 @@ interface PomodoroTimerProps {
   rounds: number;
   compact?: boolean;
   draggable?: boolean;
+  onDoubleClick?: () => void;
 }
 
-export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, draggable = false }: PomodoroTimerProps) {
+export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, draggable = false, onDoubleClick }: PomodoroTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
@@ -139,6 +140,7 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, d
         style={draggable ? { transform: `translate(${position.x}px, ${position.y}px)` } : undefined}
         onMouseDown={handleDragStart}
         onTouchStart={handleDragStart}
+        onDoubleClick={onDoubleClick}
       >
         {/* Status Badge */}
         <div className={cn(

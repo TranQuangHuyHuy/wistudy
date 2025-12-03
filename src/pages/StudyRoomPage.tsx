@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, EyeOff, Maximize, Minimize, Music2 } from 'lucide-react';
+import { X, Home, Clock, Maximize, Minimize, Music2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -156,23 +156,14 @@ export default function StudyRoomPage() {
             "absolute top-4 right-4 z-10",
             !showTimer && "pointer-events-none opacity-0"
           )}>
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowTimer(false)}
-                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background/80 hover:bg-background z-10 pointer-events-auto"
-              >
-                <EyeOff className="w-3 h-3" />
-              </Button>
-              <PomodoroTimer
-                studyTime={userData.pomodoroSettings.studyTime}
-                breakTime={userData.pomodoroSettings.breakTime}
-                rounds={userData.pomodoroSettings.rounds}
-                compact
-                draggable
-              />
-            </div>
+            <PomodoroTimer
+              studyTime={userData.pomodoroSettings.studyTime}
+              breakTime={userData.pomodoroSettings.breakTime}
+              rounds={userData.pomodoroSettings.rounds}
+              compact
+              draggable
+              onDoubleClick={() => setShowTimer(false)}
+            />
           </div>
           
           {/* Show timer button */}
