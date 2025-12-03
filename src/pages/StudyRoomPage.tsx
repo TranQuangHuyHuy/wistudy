@@ -157,7 +157,7 @@ export default function StudyRoomPage() {
             className="absolute top-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
             size="icon"
           >
-            <Clock className="w-5 h-5" />
+            <Clock className="w-5 h-5 text-foreground" />
           </Button>
 
           {/* Music button - below timer button */}
@@ -167,7 +167,7 @@ export default function StudyRoomPage() {
               className="absolute top-[68px] right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
               size="icon"
             >
-              <Music2 className="w-5 h-5" />
+              <Music2 className="w-5 h-5 text-foreground" />
             </Button>
           )}
 
@@ -178,9 +178,9 @@ export default function StudyRoomPage() {
             size="icon"
           >
             {isFullscreen ? (
-              <Minimize className="w-5 h-5" />
+              <Minimize className="w-5 h-5 text-foreground" />
             ) : (
-              <Maximize className="w-5 h-5" />
+              <Maximize className="w-5 h-5 text-foreground" />
             )}
           </Button>
         </div>
