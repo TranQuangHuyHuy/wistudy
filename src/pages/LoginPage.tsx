@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/wistudy/Logo';
+import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { BookOpen, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -67,8 +68,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
-      <header className="p-6">
+      <header className="p-6 flex items-center justify-between">
         <Logo size="sm" />
+        <ThemeToggle />
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">

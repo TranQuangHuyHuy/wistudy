@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { ImageUploader } from '@/components/wistudy/ImageUploader';
+import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -54,9 +55,12 @@ export default function UploadIdolPage() {
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
-        <Link to="/settings" className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
-          <Settings className="w-5 h-5 text-muted-foreground" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+            <Settings className="w-5 h-5 text-muted-foreground" />
+          </Link>
+        </div>
       </header>
 
       {/* Main Content */}

@@ -2,13 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
+import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { BookOpen, Sparkles, Clock, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col">
-      <header className="p-6">
+      <header className="p-6 flex items-center justify-between">
         <Logo size="sm" />
+        <ThemeToggle />
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
