@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, EyeOff, Maximize, Minimize } from 'lucide-react';
+import { X, Home, Clock, EyeOff, Maximize, Minimize, Music2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -25,7 +25,7 @@ export default function StudyRoomPage() {
   const [showTimer, setShowTimer] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
-  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleExit = () => {
@@ -183,6 +183,20 @@ export default function StudyRoomPage() {
               size="icon"
             >
               <Clock className="w-4 h-4" />
+            </Button>
+          )}
+
+          {/* Music button - below timer */}
+          {userData.selectedMusic && (
+            <Button
+              onClick={() => setShowMusicPlayer(!showMusicPlayer)}
+              className={cn(
+                "absolute right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10",
+                showTimer ? "top-[72px]" : "top-16"
+              )}
+              size="icon"
+            >
+              <Music2 className="w-4 h-4" />
             </Button>
           )}
 
