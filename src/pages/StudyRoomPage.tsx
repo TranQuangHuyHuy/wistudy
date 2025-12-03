@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, Maximize, Minimize, Music2 } from 'lucide-react';
+import { X, Home, Clock, Maximize, Minimize, Music2, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -26,6 +26,7 @@ export default function StudyRoomPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleExit = () => {
@@ -169,6 +170,22 @@ export default function StudyRoomPage() {
             </Button>
           )}
 
+          {/* Sound toggle button - below music button */}
+          <Button
+            onClick={() => setIsMuted(!isMuted)}
+            className={cn(
+              "absolute right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform",
+              userData.selectedMusic ? "top-[124px]" : "top-[68px]"
+            )}
+            size="icon"
+          >
+            {isMuted ? (
+              <VolumeX className="w-5 h-5 text-foreground" />
+            ) : (
+              <Volume2 className="w-5 h-5 text-foreground" />
+            )}
+          </Button>
+
           {/* Fullscreen button - bottom right */}
           <Button
             onClick={toggleFullscreen}
@@ -194,6 +211,7 @@ export default function StudyRoomPage() {
             rounds={userData.pomodoroSettings.rounds}
             compact
             draggable
+            muted={isMuted}
             initialPosition={{ x: window.innerWidth - 180, y: 16 }}
           />
         </div>
