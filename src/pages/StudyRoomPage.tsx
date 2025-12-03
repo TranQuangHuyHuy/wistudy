@@ -29,8 +29,7 @@ export default function StudyRoomPage() {
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleExit = () => {
-    resetApp();
-    navigate('/');
+    navigate('/choose-music');
   };
 
   const toggleFullscreen = useCallback(() => {
