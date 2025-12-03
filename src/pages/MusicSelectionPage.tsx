@@ -214,19 +214,24 @@ export default function MusicSelectionPage() {
                 ))}
               </div>
 
-              {/* Preview Player */}
+              {/* Preview Player - Audio Only with Autoplay */}
               {selectedPlaylist && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground text-center">
-                    Nghe thử: {selectedPlaylist.nameVi}
+                    🎵 Đang phát: {selectedPlaylist.nameVi}
                   </p>
                   <div className="rounded-xl overflow-hidden border border-border bg-card">
                     <iframe
-                      src={selectedPlaylist.embedUrl + (selectedPlaylist.type === 'youtube' ? '?autoplay=0' : '?utm_source=generator')}
+                      key={selectedPlaylist.id}
+                      src={
+                        selectedPlaylist.type === 'youtube' 
+                          ? `${selectedPlaylist.embedUrl}?autoplay=1&loop=1`
+                          : `${selectedPlaylist.embedUrl}?utm_source=generator&autoplay=1`
+                      }
                       width="100%"
-                      height={selectedPlaylist.type === 'youtube' ? '200' : '152'}
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
+                      height={selectedPlaylist.type === 'youtube' ? '80' : '80'}
+                      allow="autoplay; clipboard-write; encrypted-media"
+                      loading="eager"
                       className="block"
                     />
                   </div>
