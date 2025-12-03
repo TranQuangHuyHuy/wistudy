@@ -125,7 +125,10 @@ export default function ChooseBackgroundPage() {
                 onSelect={() => handlePresetSelect(bg.id)}
               />
             ))}
-            
+          </div>
+
+          {/* Upload & Text Prompt Row */}
+          <div className="grid grid-cols-2 gap-3">
             {/* Custom Upload */}
             <label className={`
               relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video cursor-pointer

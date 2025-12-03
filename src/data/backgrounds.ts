@@ -16,27 +16,6 @@ export const backgrounds: Background[] = [
     prompt: 'A bright modern classroom with rows of desks, large blackboard, educational posters on walls, natural sunlight through windows, academic study atmosphere'
   },
   {
-    id: 'night-city',
-    name: 'Night City',
-    nameVi: 'Thành phố ban đêm',
-    preview: '/backgrounds/night-city.jpg',
-    prompt: 'A modern apartment room with large glass windows overlooking city skyline at night, city lights bokeh, cozy desk lamp, peaceful night study atmosphere'
-  },
-  {
-    id: 'park-sunrise',
-    name: 'Park Sunrise',
-    nameVi: 'Bình minh ở công viên',
-    preview: '/backgrounds/park-sunrise.jpg',
-    prompt: 'A peaceful park at sunrise, golden morning light, green trees, wooden bench, fresh morning atmosphere, birds, nature study environment'
-  },
-  {
-    id: 'cafe',
-    name: 'Coffee Shop',
-    nameVi: 'Quán cafe',
-    preview: '/backgrounds/cafe.jpg',
-    prompt: 'A aesthetic modern coffee shop interior, soft ambient lighting, wooden tables, plants, large windows, cozy study atmosphere, warm tones'
-  },
-  {
     id: 'rain',
     name: 'Rainy Day',
     nameVi: 'Mưa',
