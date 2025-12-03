@@ -151,40 +151,36 @@ export default function StudyRoomPage() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Timer overlay - draggable */}
-          <div className={cn(
-            "absolute top-4 right-4 z-10",
-            !showTimer && "pointer-events-none opacity-0"
-          )}>
-            <PomodoroTimer
-              studyTime={userData.pomodoroSettings.studyTime}
-              breakTime={userData.pomodoroSettings.breakTime}
-              rounds={userData.pomodoroSettings.rounds}
-              compact
-              draggable
-              onDoubleClick={() => setShowTimer(false)}
-            />
-          </div>
-          
-          {/* Show timer button */}
-          {!showTimer && (
+          {/* Timer button + expandable timer */}
+          <div className="absolute top-4 right-4 z-10 flex items-start gap-2">
+            {/* Timer panel - slides in from right */}
+            <div className={cn(
+              "transition-all duration-300 overflow-hidden",
+              showTimer ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none w-0"
+            )}>
+              <PomodoroTimer
+                studyTime={userData.pomodoroSettings.studyTime}
+                breakTime={userData.pomodoroSettings.breakTime}
+                rounds={userData.pomodoroSettings.rounds}
+                compact
+              />
+            </div>
+            
+            {/* Timer toggle button - always visible */}
             <Button
-              onClick={() => setShowTimer(true)}
-              className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+              onClick={() => setShowTimer(!showTimer)}
+              className="bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10 flex-shrink-0"
               size="icon"
             >
               <Clock className="w-4 h-4" />
             </Button>
-          )}
+          </div>
 
           {/* Music button - below timer */}
           {userData.selectedMusic && (
             <Button
               onClick={() => setShowMusicPlayer(!showMusicPlayer)}
-              className={cn(
-                "absolute right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10",
-                showTimer ? "top-[72px]" : "top-16"
-              )}
+              className="absolute top-16 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
               size="icon"
             >
               <Music2 className="w-4 h-4" />
