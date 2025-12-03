@@ -8,6 +8,30 @@ const corsHeaders = {
 const MAX_RETRIES = 3;
 const INITIAL_DELAY_MS = 2000;
 
+async function generateWithOpenAI(prompt: string, isAnonymous: boolean): Promise<Response> {
+  const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+  if (!OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+
+  console.log(`Trying OpenAI (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
+
+  return await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-image-1",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "high",
+    }),
+  });
+}
+
 async function generateWithLovableAI(parts: any[], isAnonymous: boolean): Promise<Response> {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) {
@@ -226,6 +250,55 @@ Requirements:
       }
     }
 
+    // Fallback to OpenAI if both Gemini and Lovable AI failed
+    if (!generatedImageUrl) {
+      console.log("Falling back to OpenAI...");
+      
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const response = await generateWithOpenAI(prompt, isAnonymous);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log("OpenAI response received");
+            
+            // OpenAI returns base64 data in data[0].b64_json or URL in data[0].url
+            if (data.data && data.data[0]) {
+              if (data.data[0].b64_json) {
+                generatedImageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+              } else if (data.data[0].url) {
+                // Fetch the image and convert to base64
+                const imgResponse = await fetch(data.data[0].url);
+                const imgBuffer = await imgResponse.arrayBuffer();
+                const base64 = btoa(String.fromCharCode(...new Uint8Array(imgBuffer)));
+                generatedImageUrl = `data:image/png;base64,${base64}`;
+              }
+            }
+            
+            if (generatedImageUrl) break;
+          } else if (response.status === 429) {
+            console.log(`OpenAI rate limited (attempt ${attempt + 1}/${MAX_RETRIES})`);
+            lastError = `OpenAI rate limited`;
+            
+            if (attempt < MAX_RETRIES - 1) {
+              const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
+              console.log(`Waiting ${delay}ms before retry...`);
+              await sleep(delay);
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("OpenAI error:", response.status, errorText);
+            lastError = `OpenAI error: ${response.status}`;
+            break;
+          }
+        } catch (e) {
+          console.error("OpenAI exception:", e);
+          lastError = e instanceof Error ? e.message : "Unknown error";
+          break;
+        }
+      }
+    }
+
     if (!generatedImageUrl) {
       console.error("All AI providers failed. Last error:", lastError);
       
@@ -243,7 +316,7 @@ Requirements:
       
       return new Response(
         JSON.stringify({ 
-          error: "Cả hai AI đều đang bận. Vui lòng đợi 1-2 phút rồi thử lại.",
+          error: "Tất cả AI đều đang bận. Vui lòng đợi 1-2 phút rồi thử lại.",
           details: lastError
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
