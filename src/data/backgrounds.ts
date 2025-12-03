@@ -5,7 +5,7 @@ export const backgrounds: Background[] = [
     id: 'library',
     name: 'Library',
     nameVi: 'Thư viện',
-    preview: '/backgrounds/library.jpg',
+    preview: '/backgrounds/library.png',
     prompt: 'A cozy modern library with warm lighting, wooden bookshelves filled with books, comfortable study desks, large windows with natural light, peaceful studying atmosphere'
   },
   {
