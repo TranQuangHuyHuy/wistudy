@@ -113,7 +113,7 @@ export default function StudyRoomPage() {
           )}
         </div>
 
-        {/* Overlays container - with fade animation */}
+        {/* Overlays container - buttons only, fade after 5s */}
         <div className={cn(
           "transition-opacity duration-300",
           showOverlays ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -151,32 +151,16 @@ export default function StudyRoomPage() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Timer button + expandable timer */}
-          <div className="absolute top-4 right-4 z-10 flex items-start gap-2">
-            {/* Timer panel - slides in from right */}
-            <div className={cn(
-              "transition-all duration-300 overflow-hidden",
-              showTimer ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none w-0"
-            )}>
-              <PomodoroTimer
-                studyTime={userData.pomodoroSettings.studyTime}
-                breakTime={userData.pomodoroSettings.breakTime}
-                rounds={userData.pomodoroSettings.rounds}
-                compact
-              />
-            </div>
-            
-            {/* Timer toggle button - always visible */}
-            <Button
-              onClick={() => setShowTimer(!showTimer)}
-              className="bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10 flex-shrink-0"
-              size="icon"
-            >
-              <Clock className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Timer toggle button */}
+          <Button
+            onClick={() => setShowTimer(!showTimer)}
+            className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
+            size="icon"
+          >
+            <Clock className="w-4 h-4" />
+          </Button>
 
-          {/* Music button - below timer */}
+          {/* Music button - below timer button */}
           {userData.selectedMusic && (
             <Button
               onClick={() => setShowMusicPlayer(!showMusicPlayer)}
@@ -201,7 +185,20 @@ export default function StudyRoomPage() {
           </Button>
         </div>
 
-        {/* Music Player - always mounted, visibility controlled */}
+        {/* Timer panel - outside overlay, stays visible */}
+        <div className={cn(
+          "absolute top-4 right-16 z-10 transition-all duration-300",
+          showTimer ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
+        )}>
+          <PomodoroTimer
+            studyTime={userData.pomodoroSettings.studyTime}
+            breakTime={userData.pomodoroSettings.breakTime}
+            rounds={userData.pomodoroSettings.rounds}
+            compact
+          />
+        </div>
+
+        {/* Music Player - outside overlay, stays visible */}
         {userData.selectedMusic && (
           <MusicPlayer 
             music={userData.selectedMusic} 
