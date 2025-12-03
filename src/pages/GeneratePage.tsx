@@ -119,7 +119,7 @@ export default function GeneratePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pb-6 animate-slide-up">
+      <main className="flex-1 px-6 pb-6 page-transition">
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
           <div className="flex justify-center">

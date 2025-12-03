@@ -12,11 +12,11 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <div className="w-full max-w-md space-y-10 animate-fade-in text-center">
+        <div className="w-full max-w-md space-y-10 page-transition text-center">
           {/* Hero */}
           <div className="space-y-4">
-            <div className="inline-flex p-4 bg-accent-blue rounded-3xl mb-4">
-              <BookOpen className="w-14 h-14 text-primary" />
+            <div className="inline-flex p-4 bg-accent-blue rounded-3xl mb-4 group cursor-default">
+              <BookOpen className="w-14 h-14 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">
               Chào mừng đến WiStudy
@@ -28,13 +28,13 @@ export default function LandingPage() {
 
           {/* Features */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-card rounded-2xl shadow-soft text-left">
-              <Sparkles className="w-6 h-6 text-primary mb-2" />
+            <div className="group p-4 bg-card rounded-2xl shadow-soft text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated cursor-default">
+              <Sparkles className="w-6 h-6 text-primary mb-2 transition-transform duration-300 group-hover:scale-125" />
               <p className="text-sm font-medium">AI tạo ảnh</p>
               <p className="text-xs text-muted-foreground">Không gian học tập cá nhân hóa</p>
             </div>
-            <div className="p-4 bg-card rounded-2xl shadow-soft text-left">
-              <Clock className="w-6 h-6 text-primary mb-2" />
+            <div className="group p-4 bg-card rounded-2xl shadow-soft text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated cursor-default">
+              <Clock className="w-6 h-6 text-primary mb-2 transition-transform duration-300 group-hover:scale-125" />
               <p className="text-sm font-medium">Pomodoro</p>
               <p className="text-xs text-muted-foreground">Quản lý thời gian hiệu quả</p>
             </div>

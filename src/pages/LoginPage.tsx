@@ -72,11 +72,11 @@ export default function LoginPage() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <div className="w-full max-w-sm space-y-8 animate-fade-in">
+        <div className="w-full max-w-sm space-y-8 page-transition">
           {/* Hero */}
           <div className="text-center space-y-3">
-            <div className="inline-flex p-3 bg-accent-blue rounded-2xl mb-2">
-              <BookOpen className="w-10 h-10 text-primary" />
+            <div className="inline-flex p-3 bg-accent-blue rounded-2xl mb-2 group cursor-default">
+              <BookOpen className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">
               Đăng nhập
