@@ -5,8 +5,80 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const MAX_RETRIES = 3;
+const INITIAL_DELAY_MS = 2000;
+
+async function generateWithLovableAI(parts: any[], isAnonymous: boolean): Promise<Response> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    throw new Error("LOVABLE_API_KEY is not configured");
+  }
+
+  const messages = [{
+    role: "user",
+    content: parts.map(part => {
+      if (part.text) {
+        return { type: "text", text: part.text };
+      }
+      if (part.inlineData) {
+        return {
+          type: "image_url",
+          image_url: {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+          }
+        };
+      }
+      return part;
+    })
+  }];
+
+  console.log(`Trying Lovable AI (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-pro-image-preview",
+      messages,
+      modalities: ["image", "text"]
+    }),
+  });
+
+  return response;
+}
+
+async function generateWithGeminiAPI(parts: any[], isAnonymous: boolean): Promise<Response> {
+  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is not configured");
+  }
+
+  console.log(`Trying Gemini API (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [{ parts }],
+      generationConfig: {
+        responseModalities: ["TEXT", "IMAGE"]
+      }
+    }),
+  });
+
+  return response;
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,19 +86,12 @@ serve(async (req) => {
   try {
     const { idolImageBase64, userImageBase64, backgroundPrompt } = await req.json();
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured");
-    }
-
     const isAnonymous = !idolImageBase64 || idolImageBase64 === 'anonymous';
     
     let prompt: string;
     const parts: any[] = [];
 
     if (isAnonymous) {
-      // Anonymous mode - generate a random person
       prompt = `Create a beautiful artistic illustration of a person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
 
 Requirements:
@@ -41,7 +106,6 @@ Requirements:
       
       parts.push({ text: prompt });
     } else {
-      // With reference image - create based on the person
       prompt = `Look at this reference image of a person. Create a new artistic illustration showing this same person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
 
 Requirements:
@@ -55,7 +119,6 @@ Requirements:
 
       parts.push({ text: prompt });
       
-      // Extract base64 data (remove data URL prefix if present)
       let base64Data = idolImageBase64;
       let mimeType = "image/jpeg";
       
@@ -75,67 +138,102 @@ Requirements:
       });
     }
 
-    console.log(`Using Gemini API (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"]
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Đã vượt quá giới hạn yêu cầu. Vui lòng đợi 1-2 phút rồi thử lại." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      if (response.status === 400) {
-        return new Response(
-          JSON.stringify({ error: "Yêu cầu không hợp lệ. Vui lòng thử ảnh khác." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Gemini API response received");
-
-    // Extract image from Gemini response
     let generatedImageUrl = null;
     let textResponse = "";
-    
-    const candidates = data.candidates;
-    if (candidates && candidates[0]?.content?.parts) {
-      for (const part of candidates[0].content.parts) {
-        if (part.text) {
-          textResponse = part.text;
+    let lastError: string | null = null;
+
+    // Try Lovable AI first with retries
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const response = await generateWithLovableAI(parts, isAnonymous);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Lovable AI response received");
+          
+          const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          if (imageUrl) {
+            generatedImageUrl = imageUrl;
+            break;
+          }
+          textResponse = data.choices?.[0]?.message?.content || "";
+        } else if (response.status === 429 || response.status === 402) {
+          const errorText = await response.text();
+          console.log(`Lovable AI rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${response.status}`);
+          lastError = `Lovable AI: ${response.status}`;
+          
+          if (attempt < MAX_RETRIES - 1) {
+            const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
+            console.log(`Waiting ${delay}ms before retry...`);
+            await sleep(delay);
+          }
+        } else {
+          const errorText = await response.text();
+          console.error("Lovable AI error:", response.status, errorText);
+          lastError = `Lovable AI error: ${response.status}`;
+          break;
         }
-        if (part.inlineData) {
-          const mimeType = part.inlineData.mimeType || "image/png";
-          const base64Data = part.inlineData.data;
-          generatedImageUrl = `data:${mimeType};base64,${base64Data}`;
+      } catch (e) {
+        console.error("Lovable AI exception:", e);
+        lastError = e instanceof Error ? e.message : "Unknown error";
+        break;
+      }
+    }
+
+    // Fallback to Gemini API if Lovable AI failed
+    if (!generatedImageUrl) {
+      console.log("Falling back to Gemini API...");
+      
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const response = await generateWithGeminiAPI(parts, isAnonymous);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Gemini API response received");
+            
+            const candidates = data.candidates;
+            if (candidates && candidates[0]?.content?.parts) {
+              for (const part of candidates[0].content.parts) {
+                if (part.text) {
+                  textResponse = part.text;
+                }
+                if (part.inlineData) {
+                  const mimeType = part.inlineData.mimeType || "image/png";
+                  const base64Data = part.inlineData.data;
+                  generatedImageUrl = `data:${mimeType};base64,${base64Data}`;
+                }
+              }
+            }
+            
+            if (generatedImageUrl) break;
+          } else if (response.status === 429) {
+            const errorText = await response.text();
+            console.log(`Gemini API rate limited (attempt ${attempt + 1}/${MAX_RETRIES}): ${errorText.substring(0, 200)}`);
+            lastError = "Gemini API rate limited";
+            
+            if (attempt < MAX_RETRIES - 1) {
+              const delay = INITIAL_DELAY_MS * Math.pow(2, attempt);
+              console.log(`Waiting ${delay}ms before retry...`);
+              await sleep(delay);
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("Gemini API error:", response.status, errorText);
+            lastError = `Gemini API error: ${response.status}`;
+            break;
+          }
+        } catch (e) {
+          console.error("Gemini API exception:", e);
+          lastError = e instanceof Error ? e.message : "Unknown error";
+          break;
         }
       }
     }
 
     if (!generatedImageUrl) {
-      console.error("No image in response:", JSON.stringify(data).substring(0, 1000));
+      console.error("All AI providers failed. Last error:", lastError);
       
-      // If model refuses, return helpful message
       if (textResponse.toLowerCase().includes("can't") || textResponse.toLowerCase().includes("cannot") || textResponse.toLowerCase().includes("sorry")) {
         return new Response(
           JSON.stringify({ 
@@ -150,10 +248,10 @@ Requirements:
       
       return new Response(
         JSON.stringify({ 
-          error: "Không thể tạo ảnh. Vui lòng thử lại.",
-          details: textResponse
+          error: "Cả hai AI đều đang bận. Vui lòng đợi 1-2 phút rồi thử lại.",
+          details: lastError
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
