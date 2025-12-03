@@ -167,7 +167,7 @@ export default function MusicSelectionPage() {
           {musicSource === 'preset' && (
             <div className="space-y-4">
               {/* Category Selection */}
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="grid grid-cols-3 gap-2">
                 {categories.map((cat) => (
                   <Button
                     key={cat.id}
@@ -177,10 +177,10 @@ export default function MusicSelectionPage() {
                       setSelectedCategory(cat.id);
                       setSelectedPlaylist(null);
                     }}
-                    className="flex items-center gap-1.5 whitespace-nowrap"
+                    className="flex items-center justify-center gap-1 text-xs px-2"
                   >
-                    <cat.icon className="h-4 w-4" />
-                    {cat.name}
+                    <cat.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="truncate">{cat.name}</span>
                   </Button>
                 ))}
               </div>
