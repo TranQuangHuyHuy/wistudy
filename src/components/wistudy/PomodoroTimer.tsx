@@ -3,53 +3,76 @@ import { Play, Pause, RotateCcw, Coffee, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+// Shared AudioContext instance
+let audioContext: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  // Resume if suspended (browser autoplay policy)
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+  return audioContext;
+};
+
 // Play notification sound using Web Audio API
 const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete' | 'tick') => {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-  
-  const playTone = (frequency: number, duration: number, delay: number = 0, volume: number = 0.3) => {
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+  try {
+    const ctx = getAudioContext();
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = 'sine';
-    
-    const startTime = audioContext.currentTime + delay;
-    gainNode.gain.setValueAtTime(volume, startTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-    
-    oscillator.start(startTime);
-    oscillator.stop(startTime + duration);
-  };
+    const playTone = (frequency: number, duration: number, delay: number = 0, volume: number = 0.5) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      const startTime = ctx.currentTime + delay;
+      gainNode.gain.setValueAtTime(volume, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
 
-  switch (type) {
-    case 'tick':
-      // Soft tick sound for last minute warning
-      playTone(880, 0.08, 0, 0.15); // A5 - short soft beep
-      break;
-    case 'study-end':
-      // Gentle chime - time to rest
-      playTone(523, 0.3, 0);    // C5
-      playTone(659, 0.3, 0.15); // E5
-      playTone(784, 0.4, 0.3);  // G5
-      break;
-    case 'break-end':
-      // Energetic tone - back to study
-      playTone(440, 0.2, 0);    // A4
-      playTone(554, 0.2, 0.1);  // C#5
-      playTone(659, 0.3, 0.2);  // E5
-      break;
-    case 'complete':
-      // Victory sound - all rounds complete
-      playTone(523, 0.2, 0);
-      playTone(659, 0.2, 0.1);
-      playTone(784, 0.2, 0.2);
-      playTone(1047, 0.4, 0.3); // C6
-      break;
+    switch (type) {
+      case 'tick':
+        // Soft tick sound for last minute warning
+        playTone(880, 0.1, 0, 0.25); // A5 - short beep
+        break;
+      case 'study-end':
+        // Gentle chime - time to rest
+        playTone(523, 0.4, 0, 0.6);    // C5
+        playTone(659, 0.4, 0.2, 0.6);  // E5
+        playTone(784, 0.5, 0.4, 0.6);  // G5
+        break;
+      case 'break-end':
+        // Energetic tone - back to study
+        playTone(440, 0.3, 0, 0.6);    // A4
+        playTone(554, 0.3, 0.15, 0.6); // C#5
+        playTone(659, 0.4, 0.3, 0.6);  // E5
+        break;
+      case 'complete':
+        // Victory sound - all rounds complete
+        playTone(523, 0.3, 0, 0.7);
+        playTone(659, 0.3, 0.15, 0.7);
+        playTone(784, 0.3, 0.3, 0.7);
+        playTone(1047, 0.5, 0.45, 0.7); // C6
+        break;
+    }
+  } catch (error) {
+    console.log('Audio playback failed:', error);
   }
+};
+
+// Initialize audio context on user interaction
+export const initAudioContext = () => {
+  getAudioContext();
 };
 
 interface PomodoroTimerProps {
@@ -195,6 +218,8 @@ export function PomodoroTimer({
   };
 
   const toggleTimer = useCallback(() => {
+    // Initialize audio context on user interaction
+    initAudioContext();
     setIsRunning(prev => !prev);
   }, []);
 
