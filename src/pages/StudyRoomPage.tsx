@@ -185,8 +185,11 @@ export default function StudyRoomPage() {
           </Button>
         </div>
 
-        {/* Timer panel - outside overlay, stays visible, draggable */}
-        {showTimer && (
+        {/* Timer panel - always mounted, visibility controlled */}
+        <div className={cn(
+          "transition-opacity duration-300",
+          showTimer ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}>
           <PomodoroTimer
             studyTime={userData.pomodoroSettings.studyTime}
             breakTime={userData.pomodoroSettings.breakTime}
@@ -195,7 +198,7 @@ export default function StudyRoomPage() {
             draggable
             initialPosition={{ x: window.innerWidth - 180, y: 16 }}
           />
-        )}
+        </div>
 
         {/* Music Player - outside overlay, stays visible */}
         {userData.selectedMusic && (
