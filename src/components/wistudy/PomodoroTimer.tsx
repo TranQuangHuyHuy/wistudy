@@ -81,6 +81,7 @@ interface PomodoroTimerProps {
   rounds: number;
   compact?: boolean;
   draggable?: boolean;
+  muted?: boolean;
   onDoubleClick?: () => void;
   initialPosition?: { x: number; y: number };
 }
@@ -91,6 +92,7 @@ export function PomodoroTimer({
   rounds, 
   compact = false, 
   draggable = false, 
+  muted = false,
   onDoubleClick,
   initialPosition = { x: 60, y: 16 }
 }: PomodoroTimerProps) {
@@ -115,8 +117,8 @@ export function PomodoroTimer({
       interval = setInterval(() => {
         setTimeLeft(prev => {
           const newTime = prev - 1;
-          // Play tick sound during last 60 seconds
-          if (newTime > 0 && newTime <= 60) {
+          // Play tick sound during last 60 seconds (if not muted)
+          if (!muted && newTime > 0 && newTime <= 60) {
             playNotificationSound('tick');
           }
           return newTime;
@@ -125,23 +127,23 @@ export function PomodoroTimer({
     } else if (timeLeft === 0 && isRunning) {
       if (isBreak) {
         if (currentRound < rounds) {
-          playNotificationSound('break-end');
+          if (!muted) playNotificationSound('break-end');
           setCurrentRound(prev => prev + 1);
           setIsBreak(false);
           setTimeLeft(studyTime * 60);
         } else {
-          playNotificationSound('complete');
+          if (!muted) playNotificationSound('complete');
           setIsRunning(false);
         }
       } else {
-        playNotificationSound('study-end');
+        if (!muted) playNotificationSound('study-end');
         setIsBreak(true);
         setTimeLeft(breakTime * 60);
       }
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, timeLeft, isBreak, currentRound, rounds, studyTime, breakTime]);
+  }, [isRunning, timeLeft, isBreak, currentRound, rounds, studyTime, breakTime, muted]);
 
   // Get element size for boundary calculation
   const getElementSize = useCallback(() => {
