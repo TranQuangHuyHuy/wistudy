@@ -3,6 +3,51 @@ import { Play, Pause, RotateCcw, Coffee, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+// Play notification sound using Web Audio API
+const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete') => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  
+  const playTone = (frequency: number, duration: number, delay: number = 0) => {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    const startTime = audioContext.currentTime + delay;
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+    
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
+  };
+
+  switch (type) {
+    case 'study-end':
+      // Gentle chime - time to rest
+      playTone(523, 0.3, 0);    // C5
+      playTone(659, 0.3, 0.15); // E5
+      playTone(784, 0.4, 0.3);  // G5
+      break;
+    case 'break-end':
+      // Energetic tone - back to study
+      playTone(440, 0.2, 0);    // A4
+      playTone(554, 0.2, 0.1);  // C#5
+      playTone(659, 0.3, 0.2);  // E5
+      break;
+    case 'complete':
+      // Victory sound - all rounds complete
+      playTone(523, 0.2, 0);
+      playTone(659, 0.2, 0.1);
+      playTone(784, 0.2, 0.2);
+      playTone(1047, 0.4, 0.3); // C6
+      break;
+  }
+};
+
 interface PomodoroTimerProps {
   studyTime: number;
   breakTime: number;
@@ -43,16 +88,19 @@ export function PomodoroTimer({
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isRunning) {
       if (isBreak) {
         if (currentRound < rounds) {
+          playNotificationSound('break-end');
           setCurrentRound(prev => prev + 1);
           setIsBreak(false);
           setTimeLeft(studyTime * 60);
         } else {
+          playNotificationSound('complete');
           setIsRunning(false);
         }
       } else {
+        playNotificationSound('study-end');
         setIsBreak(true);
         setTimeLeft(breakTime * 60);
       }
