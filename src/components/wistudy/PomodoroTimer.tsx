@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Pause, RotateCcw, Coffee } from 'lucide-react';
+import { Play, Pause, RotateCcw, Coffee, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -10,19 +10,28 @@ interface PomodoroTimerProps {
   compact?: boolean;
   draggable?: boolean;
   onDoubleClick?: () => void;
+  initialPosition?: { x: number; y: number };
 }
 
-export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, draggable = false, onDoubleClick }: PomodoroTimerProps) {
+export function PomodoroTimer({ 
+  studyTime, 
+  breakTime, 
+  rounds, 
+  compact = false, 
+  draggable = false, 
+  onDoubleClick,
+  initialPosition = { x: 60, y: 16 }
+}: PomodoroTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(studyTime * 60);
   
   // Drag state
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef({ x: 0, y: 0 });
+  const offsetRef = useRef({ x: 0, y: 0 });
 
   const totalTime = isBreak ? breakTime * 60 : studyTime * 60;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -52,58 +61,77 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, d
     return () => clearInterval(interval);
   }, [isRunning, timeLeft, isBreak, currentRound, rounds, studyTime, breakTime]);
 
+  // Get element size for boundary calculation
+  const getElementSize = useCallback(() => {
+    if (dragRef.current) {
+      return {
+        width: dragRef.current.offsetWidth,
+        height: dragRef.current.offsetHeight
+      };
+    }
+    return { width: 120, height: 160 };
+  }, []);
+
   // Drag handlers
   useEffect(() => {
     if (!draggable) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
-      setPosition(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
-      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      e.preventDefault();
+      
+      const size = getElementSize();
+      const newX = e.clientX - offsetRef.current.x;
+      const newY = e.clientY - offsetRef.current.y;
+      
+      const clampedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
+      const clampedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+      
+      setPosition({ x: clampedX, y: clampedY });
+      
+      if (clampedX !== newX) {
+        offsetRef.current.x = e.clientX - clampedX;
+      }
+      if (clampedY !== newY) {
+        offsetRef.current.y = e.clientY - clampedY;
+      }
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - dragStartRef.current.x;
-      const deltaY = touch.clientY - dragStartRef.current.y;
-      setPosition(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
-      dragStartRef.current = { x: touch.clientX, y: touch.clientY };
-    };
-
-    const handleTouchEnd = () => {
-      setIsDragging(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
 
     if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleTouchMove);
-      window.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, draggable]);
+  }, [isDragging, draggable, getElementSize]);
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (!draggable) return;
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'grabbing';
+    
     if ('touches' in e) {
-      dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      offsetRef.current = {
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y,
+      };
     } else {
-      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      offsetRef.current = {
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      };
     }
   };
 
@@ -133,93 +161,103 @@ export function PomodoroTimer({ studyTime, breakTime, rounds, compact = false, d
       <div 
         ref={dragRef}
         className={cn(
-          "flex flex-col items-center bg-background/85 backdrop-blur-md rounded-xl p-2.5 shadow-lg select-none",
-          draggable && "cursor-grab",
-          isDragging && "cursor-grabbing"
+          "bg-background/85 backdrop-blur-md rounded-xl shadow-lg select-none",
+          draggable && "fixed z-50"
         )}
-        style={draggable ? { transform: `translate(${position.x}px, ${position.y}px)` } : undefined}
-        onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
-        onDoubleClick={onDoubleClick}
+        style={draggable ? { left: position.x, top: position.y } : undefined}
       >
-        {/* Status Badge */}
-        <div className={cn(
-          "flex items-center gap-1 px-2 py-0.5 rounded-full mb-2 transition-colors duration-300",
-          isBreak ? "bg-accent-pink" : "bg-accent-blue"
-        )}>
-          {isBreak ? (
-            <Coffee className="w-2.5 h-2.5 text-primary" />
-          ) : (
-            <span className="w-1 h-1 rounded-full bg-primary animate-pulse-soft" />
-          )}
-          <span className="text-[10px] font-medium">
-            {isBreak ? "Nghỉ" : "Học"} · {currentRound}/{rounds}
-          </span>
-        </div>
-
-        {/* Timer Circle */}
-        <div className="relative w-16 h-16 mb-2">
-          <svg className="w-full h-full transform -rotate-90">
-            <circle
-              cx="32"
-              cy="32"
-              r="28"
-              stroke="currentColor"
-              strokeWidth="3"
-              fill="none"
-              className="text-border/50"
-            />
-            <circle
-              cx="32"
-              cy="32"
-              r="28"
-              stroke="currentColor"
-              strokeWidth="3"
-              fill="none"
-              strokeLinecap="round"
-              className={cn(
-                "transition-all duration-1000",
-                isBreak ? "text-accent-pink" : "text-primary"
-              )}
-              style={{
-                strokeDasharray: compactCircumference,
-                strokeDashoffset: compactStrokeDashoffset
-              }}
-            />
-          </svg>
-          
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-sm font-medium tracking-tight text-foreground">
-              {formatTime(timeLeft)}
+        {/* Drag header */}
+        {draggable && (
+          <div 
+            className="flex items-center justify-center gap-1 p-1.5 border-b border-border/50 cursor-grab active:cursor-grabbing"
+            onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground">Kéo để di chuyển</span>
+          </div>
+        )}
+        
+        <div className="flex flex-col items-center p-2.5" onDoubleClick={onDoubleClick}>
+          {/* Status Badge */}
+          <div className={cn(
+            "flex items-center gap-1 px-2 py-0.5 rounded-full mb-2 transition-colors duration-300",
+            isBreak ? "bg-accent-pink" : "bg-accent-blue"
+          )}>
+            {isBreak ? (
+              <Coffee className="w-2.5 h-2.5 text-primary" />
+            ) : (
+              <span className="w-1 h-1 rounded-full bg-primary animate-pulse-soft" />
+            )}
+            <span className="text-[10px] font-medium">
+              {isBreak ? "Nghỉ" : "Học"} · {currentRound}/{rounds}
             </span>
           </div>
-        </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={(e) => { e.stopPropagation(); resetTimer(); }}
-            className="w-6 h-6 rounded-full"
-          >
-            <RotateCcw className="w-3 h-3" />
-          </Button>
-          
-          <Button
-            size="icon"
-            onClick={(e) => { e.stopPropagation(); toggleTimer(); }}
-            className={cn(
-              "w-8 h-8 rounded-full",
-              isRunning ? "bg-accent-pink hover:bg-accent-pink/80" : ""
-            )}
-          >
-            {isRunning ? (
-              <Pause className="w-3.5 h-3.5" />
-            ) : (
-              <Play className="w-3.5 h-3.5 ml-0.5" />
-            )}
-          </Button>
+          {/* Timer Circle */}
+          <div className="relative w-16 h-16 mb-2">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle
+                cx="32"
+                cy="32"
+                r="28"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+                className="text-border/50"
+              />
+              <circle
+                cx="32"
+                cy="32"
+                r="28"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                className={cn(
+                  "transition-all duration-1000",
+                  isBreak ? "text-accent-pink" : "text-primary"
+                )}
+                style={{
+                  strokeDasharray: compactCircumference,
+                  strokeDashoffset: compactStrokeDashoffset
+                }}
+              />
+            </svg>
+            
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-sm font-medium tracking-tight text-foreground">
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); resetTimer(); }}
+              className="w-6 h-6 rounded-full"
+            >
+              <RotateCcw className="w-3 h-3" />
+            </Button>
+            
+            <Button
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); toggleTimer(); }}
+              className={cn(
+                "w-8 h-8 rounded-full",
+                isRunning ? "bg-accent-pink hover:bg-accent-pink/80" : ""
+              )}
+            >
+              {isRunning ? (
+                <Pause className="w-3.5 h-3.5" />
+              ) : (
+                <Play className="w-3.5 h-3.5 ml-0.5" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     );
