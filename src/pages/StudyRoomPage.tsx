@@ -41,10 +41,6 @@ export default function StudyRoomPage() {
     }
   }, []);
 
-  const handleCloseMusic = () => {
-    setShowMusicPlayer(false);
-  };
-
   // Handle fullscreen change
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -156,27 +152,31 @@ export default function StudyRoomPage() {
           </AlertDialog>
 
           {/* Timer overlay - draggable */}
-          {showTimer ? (
-            <div className="absolute top-4 right-4 z-10">
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowTimer(false)}
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background/80 hover:bg-background z-10"
-                >
-                  <EyeOff className="w-3 h-3" />
-                </Button>
-                <PomodoroTimer
-                  studyTime={userData.pomodoroSettings.studyTime}
-                  breakTime={userData.pomodoroSettings.breakTime}
-                  rounds={userData.pomodoroSettings.rounds}
-                  compact
-                  draggable
-                />
-              </div>
+          <div className={cn(
+            "absolute top-4 right-4 z-10",
+            !showTimer && "pointer-events-none opacity-0"
+          )}>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTimer(false)}
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-background/80 hover:bg-background z-10 pointer-events-auto"
+              >
+                <EyeOff className="w-3 h-3" />
+              </Button>
+              <PomodoroTimer
+                studyTime={userData.pomodoroSettings.studyTime}
+                breakTime={userData.pomodoroSettings.breakTime}
+                rounds={userData.pomodoroSettings.rounds}
+                compact
+                draggable
+              />
             </div>
-          ) : (
+          </div>
+          
+          {/* Show timer button */}
+          {!showTimer && (
             <Button
               onClick={() => setShowTimer(true)}
               className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
@@ -214,11 +214,12 @@ export default function StudyRoomPage() {
           </Button>
         </div>
 
-        {/* Music Player - always visible if music selected */}
-        {userData.selectedMusic && showMusicPlayer && (
+        {/* Music Player - always mounted, visibility controlled */}
+        {userData.selectedMusic && (
           <MusicPlayer 
             music={userData.selectedMusic} 
-            onClose={handleCloseMusic}
+            onClose={() => setShowMusicPlayer(false)}
+            isVisible={showMusicPlayer}
           />
         )}
       </main>
