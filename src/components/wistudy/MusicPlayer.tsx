@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Music2, X, ChevronUp, ChevronDown, GripVertical, VolumeX } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Music2, GripVertical, VolumeX } from 'lucide-react';
 import { MusicSelection } from '@/types/wistudy';
 import { cn } from '@/lib/utils';
 
@@ -122,31 +121,13 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
       
       {/* Header - Draggable */}
       <div 
-        className="flex items-center justify-between p-2 border-b border-border bg-muted/50 cursor-grab select-none active:cursor-grabbing"
+        className="flex items-center justify-center p-2 border-b border-border bg-muted/50 cursor-grab select-none active:cursor-grabbing"
         onMouseDown={handleMouseDown}
       >
         <div className="flex items-center gap-2 px-1">
           <GripVertical className="h-4 w-4 text-muted-foreground" />
           <Music2 className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-foreground">{music.name}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-          >
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
