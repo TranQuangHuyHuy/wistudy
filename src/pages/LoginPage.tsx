@@ -66,7 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
       <header className="p-6">
         <Logo size="sm" />
       </header>
@@ -74,11 +74,11 @@ export default function LoginPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
         <div className="w-full max-w-sm space-y-8 page-transition">
           {/* Hero */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex p-3 bg-accent-blue rounded-2xl mb-2 group cursor-default">
+          <div className="text-center space-y-4">
+            <div className="inline-flex p-4 bg-gradient-to-br from-accent-blue to-accent-pink rounded-2xl mb-2 group cursor-default shadow-soft">
               <BookOpen className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Đăng nhập
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -87,9 +87,9 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5 bg-card p-6 rounded-2xl shadow-soft border border-border/50">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -100,7 +100,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Mật khẩu</Label>
               <Input
                 id="password"
                 type="password"

@@ -56,10 +56,10 @@ export default function ChooseBackgroundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/upload-idol')} className="p-2 -m-2 hover:bg-secondary rounded-lg transition-colors">
+        <button onClick={() => navigate('/upload-idol')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -76,7 +76,7 @@ export default function ChooseBackgroundPage() {
 
           {/* Title */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Chọn Background
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -98,8 +98,8 @@ export default function ChooseBackgroundPage() {
             {/* Custom Upload */}
             <label className={`
               relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video cursor-pointer
-              border-2 ${selected === 'custom' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50'}
-              flex items-center justify-center bg-secondary
+              border-2 ${selected === 'custom' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
+              flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
             `}>
               {customBackground ? (
                 <>
@@ -110,9 +110,9 @@ export default function ChooseBackgroundPage() {
                   </p>
                 </>
               ) : (
-                <div className="flex flex-col items-center text-muted-foreground">
-                  <Upload className="w-5 h-5 mb-1" />
-                  <span className="text-xs">Tải lên</span>
+                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                  <Upload className="w-6 h-6 mb-1.5" />
+                  <span className="text-xs font-medium">Tải lên</span>
                 </div>
               )}
               <input
@@ -127,14 +127,14 @@ export default function ChooseBackgroundPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
         <Button
           size="lg"
-          className="w-full"
+          className="w-full shadow-soft"
           onClick={handleContinue}
           disabled={!selected}
         >
-          Tạo ảnh với Idol
+          Tạo ảnh
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </footer>

@@ -101,10 +101,10 @@ export default function GeneratePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/choose-background')} className="p-2 -m-2 hover:bg-secondary rounded-lg transition-colors">
+        <button onClick={() => navigate('/choose-background')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -121,7 +121,7 @@ export default function GeneratePage() {
 
           {/* Title */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Ảnh học tập
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -130,18 +130,18 @@ export default function GeneratePage() {
           </div>
 
           {/* Generated Image Preview */}
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-secondary border border-border">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-accent-gray border border-border shadow-card">
             {isGenerating ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-accent-blue/30 to-accent-pink/30">
-                <div className="p-4 bg-accent-blue rounded-full mb-4 animate-pulse">
-                  <Sparkles className="w-8 h-8 text-primary" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-accent-blue/40 to-accent-pink/40">
+                <div className="p-5 bg-gradient-to-br from-accent-blue to-accent-pink rounded-2xl mb-4 animate-pulse shadow-soft">
+                  <Sparkles className="w-10 h-10 text-primary" />
                 </div>
-                <p className="text-sm text-foreground font-medium">Đang tạo ảnh với AI...</p>
+                <p className="text-sm text-foreground font-semibold">Đang tạo ảnh với AI...</p>
                 <p className="text-xs text-muted-foreground mt-1">Có thể mất 10-30 giây</p>
-                <div className="mt-4 flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="mt-4 flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             ) : generatedPreview ? (
@@ -152,7 +152,7 @@ export default function GeneratePage() {
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <Button onClick={generateImage} variant="pastel">
+                <Button onClick={generateImage} className="shadow-soft">
                   <Sparkles className="w-4 h-4 mr-2" />
                   Tạo ảnh
                 </Button>
@@ -164,7 +164,7 @@ export default function GeneratePage() {
           {!isGenerating && generatedPreview && (
             <Button
               variant="secondary"
-              className="w-full"
+              className="w-full shadow-soft"
               onClick={handleRegenerate}
             >
               <RefreshCw className="w-4 h-4 mr-2" />
@@ -173,8 +173,8 @@ export default function GeneratePage() {
           )}
 
           {/* Info Card */}
-          <div className="p-4 bg-accent-blue/50 rounded-xl">
-            <p className="text-sm text-foreground">
+          <div className="p-4 bg-gradient-to-r from-accent-blue/40 to-accent-pink/30 rounded-2xl border border-primary/20">
+            <p className="text-sm text-foreground leading-relaxed">
               💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại nhiều lần.
             </p>
           </div>
@@ -182,10 +182,10 @@ export default function GeneratePage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
         <Button
           size="lg"
-          className="w-full"
+          className="w-full shadow-soft"
           onClick={handleContinue}
           disabled={isGenerating || !generatedPreview}
         >

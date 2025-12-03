@@ -85,7 +85,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       <header className="p-6">
         <Logo size="sm" />
       </header>
@@ -93,11 +93,11 @@ export default function RegisterPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
         <div className="w-full max-w-sm space-y-8 page-transition">
           {/* Hero */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex p-3 bg-accent-blue rounded-2xl mb-2 group cursor-default">
+          <div className="text-center space-y-4">
+            <div className="inline-flex p-4 bg-gradient-to-br from-accent-pink to-accent-blue rounded-2xl mb-2 group cursor-default shadow-soft">
               <UserPlus className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Đăng ký tài khoản
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -106,9 +106,9 @@ export default function RegisterPage() {
           </div>
 
           {/* Register Form */}
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4 bg-card p-6 rounded-2xl shadow-soft border border-border/50">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="fullName" className="text-sm font-medium">Họ và tên</Label>
               <Input
                 id="fullName"
                 type="text"
@@ -119,7 +119,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Mật khẩu</Label>
               <Input
                 id="password"
                 type="password"
@@ -142,7 +142,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">Xác nhận mật khẩu</Label>
               <Input
                 id="confirmPassword"
                 type="password"
