@@ -143,8 +143,7 @@ export default function StudyRoomPage() {
               <AlertDialogFooter>
                 <AlertDialogCancel>Tiếp tục học</AlertDialogCancel>
                 <AlertDialogAction onClick={handleExit}>
-                  <Home className="w-4 h-4 mr-2" />
-                  Về trang chủ
+                  Thoát phòng học
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
