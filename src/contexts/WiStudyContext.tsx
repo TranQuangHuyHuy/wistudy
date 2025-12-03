@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { UserData, AppStep, PomodoroSettings } from '@/types/wistudy';
+import { UserData, AppStep, PomodoroSettings, MusicSelection } from '@/types/wistudy';
 
 interface WiStudyContextType {
   currentStep: AppStep;
@@ -10,6 +10,7 @@ interface WiStudyContextType {
   setSelectedBackground: (background: string | null) => void;
   setGeneratedImage: (image: string | null) => void;
   setPomodoroSettings: (settings: PomodoroSettings) => void;
+  setSelectedMusic: (music: MusicSelection | null) => void;
   resetApp: () => void;
 }
 
@@ -24,7 +25,8 @@ const defaultUserData: UserData = {
   userImage: null,
   selectedBackground: null,
   generatedImage: null,
-  pomodoroSettings: defaultPomodoroSettings
+  pomodoroSettings: defaultPomodoroSettings,
+  selectedMusic: null
 };
 
 const WiStudyContext = createContext<WiStudyContextType | undefined>(undefined);
@@ -53,6 +55,10 @@ export function WiStudyProvider({ children }: { children: ReactNode }) {
     setUserData(prev => ({ ...prev, pomodoroSettings: settings }));
   };
 
+  const setSelectedMusic = (music: MusicSelection | null) => {
+    setUserData(prev => ({ ...prev, selectedMusic: music }));
+  };
+
   const resetApp = () => {
     setCurrentStep('login');
     setUserData(defaultUserData);
@@ -69,6 +75,7 @@ export function WiStudyProvider({ children }: { children: ReactNode }) {
         setSelectedBackground,
         setGeneratedImage,
         setPomodoroSettings,
+        setSelectedMusic,
         resetApp
       }}
     >

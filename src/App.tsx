@@ -13,6 +13,7 @@ import UploadIdolPage from "./pages/UploadIdolPage";
 import SettingsPage from "./pages/SettingsPage";
 import ChooseBackgroundPage from "./pages/ChooseBackgroundPage";
 import GeneratePage from "./pages/GeneratePage";
+import MusicSelectionPage from "./pages/MusicSelectionPage";
 import PomodoroSetupPage from "./pages/PomodoroSetupPage";
 import StudyRoomPage from "./pages/StudyRoomPage";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ function App() {
                   <Route path="/upload-idol" element={<UploadIdolPage />} />
                   <Route path="/choose-background" element={<ChooseBackgroundPage />} />
                   <Route path="/generate" element={<GeneratePage />} />
+                  <Route path="/choose-music" element={<MusicSelectionPage />} />
                   <Route path="/pomodoro-setup" element={<PomodoroSetupPage />} />
                   <Route path="/study-room" element={<StudyRoomPage />} />
                   <Route path="/settings" element={<SettingsPage />} />

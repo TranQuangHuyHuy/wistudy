@@ -68,7 +68,7 @@ export default function UploadIdolPage() {
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
           <div className="flex justify-center">
-            <StepIndicator currentStep={1} totalSteps={4} />
+            <StepIndicator currentStep={1} totalSteps={6} />
           </div>
 
           {/* Title */}

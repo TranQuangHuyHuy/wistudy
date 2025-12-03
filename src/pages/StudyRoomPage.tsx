@@ -4,6 +4,7 @@ import { X, Home, Clock, EyeOff, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
+import { MusicPlayer } from '@/components/wistudy/MusicPlayer';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { cn } from '@/lib/utils';
 import {
@@ -20,10 +21,11 @@ import {
 
 export default function StudyRoomPage() {
   const navigate = useNavigate();
-  const { userData, resetApp } = useWiStudy();
+  const { userData, resetApp, setSelectedMusic } = useWiStudy();
   const [showTimer, setShowTimer] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleExit = () => {
@@ -38,6 +40,10 @@ export default function StudyRoomPage() {
       document.exitFullscreen();
     }
   }, []);
+
+  const handleCloseMusic = () => {
+    setShowMusicPlayer(false);
+  };
 
   // Handle fullscreen change
   useEffect(() => {
@@ -193,6 +199,14 @@ export default function StudyRoomPage() {
             )}
           </Button>
         </div>
+
+        {/* Music Player - always visible if music selected */}
+        {userData.selectedMusic && showMusicPlayer && (
+          <MusicPlayer 
+            music={userData.selectedMusic} 
+            onClose={handleCloseMusic}
+          />
+        )}
       </main>
     </div>
   );

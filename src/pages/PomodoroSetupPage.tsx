@@ -75,7 +75,7 @@ export default function PomodoroSetupPage() {
     <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+        <button onClick={() => navigate('/choose-music')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -87,7 +87,7 @@ export default function PomodoroSetupPage() {
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
           <div className="flex justify-center">
-            <StepIndicator currentStep={4} totalSteps={4} />
+            <StepIndicator currentStep={5} totalSteps={6} />
           </div>
 
           {/* Title */}

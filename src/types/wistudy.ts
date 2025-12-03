@@ -4,12 +4,19 @@ export interface UserData {
   selectedBackground: string | null;
   generatedImage: string | null;
   pomodoroSettings: PomodoroSettings;
+  selectedMusic: MusicSelection | null;
 }
 
 export interface PomodoroSettings {
   studyTime: number;
   breakTime: number;
   rounds: number;
+}
+
+export interface MusicSelection {
+  type: 'youtube' | 'spotify' | 'preset';
+  url: string;
+  name: string;
 }
 
 export interface Background {
@@ -20,4 +27,4 @@ export interface Background {
   prompt: string;
 }
 
-export type AppStep = 'login' | 'idol-upload' | 'background' | 'generate' | 'pomodoro' | 'study-room';
+export type AppStep = 'login' | 'idol-upload' | 'background' | 'generate' | 'music' | 'pomodoro' | 'study-room';
