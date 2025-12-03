@@ -6,7 +6,6 @@ import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function GeneratePage() {
@@ -40,13 +39,11 @@ export default function GeneratePage() {
 
   const generateImage = async () => {
     if (!userData.idolImage) {
-      toast.error('Vui lòng tải ảnh idol lên');
       navigate('/upload-idol');
       return;
     }
 
     setIsGenerating(true);
-    toast.info('Đang tạo ảnh với AI...');
 
     try {
       const backgroundPrompt = selectedBg?.prompt || 'cozy modern study room with warm lighting';
@@ -70,17 +67,14 @@ export default function GeneratePage() {
 
       if (data?.imageUrl) {
         setGeneratedPreview(data.imageUrl);
-        toast.success('Đã tạo ảnh thành công!');
       } else {
         // Fallback: use idol image as preview if AI fails
         setGeneratedPreview(userData.idolImage);
-        toast.info('Đã sử dụng ảnh idol làm preview');
       }
     } catch (error) {
       console.error('Error generating image:', error);
       // Fallback to idol image
       setGeneratedPreview(userData.idolImage);
-      toast.error(error instanceof Error ? error.message : 'Có lỗi xảy ra, đã sử dụng ảnh idol');
     } finally {
       setIsGenerating(false);
     }
@@ -100,7 +94,6 @@ export default function GeneratePage() {
 
   const handleContinue = () => {
     if (!generatedPreview) {
-      toast.error('Vui lòng tạo ảnh trước');
       return;
     }
     setGeneratedImage(generatedPreview);
