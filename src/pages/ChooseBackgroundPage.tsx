@@ -123,6 +123,7 @@ export default function ChooseBackgroundPage() {
                 background={bg}
                 isSelected={selected === bg.id}
                 onSelect={() => handlePresetSelect(bg.id)}
+                previewImage={bg.preview}
               />
             ))}
           </div>
