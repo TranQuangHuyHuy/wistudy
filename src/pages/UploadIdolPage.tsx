@@ -69,7 +69,7 @@ export default function UploadIdolPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pb-6 animate-slide-up">
+      <main className="flex-1 px-6 pb-6 page-transition">
         <div className="max-w-md mx-auto space-y-8">
           {/* Step Indicator */}
           <div className="flex justify-center">
