@@ -14,16 +14,16 @@ serve(async (req) => {
   try {
     const { idolImageBase64, userImageBase64, backgroundPrompt } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error("No API key configured");
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
 
     const isAnonymous = !idolImageBase64 || idolImageBase64 === 'anonymous';
     
     let prompt: string;
-    const messageContent: any[] = [];
+    const parts: any[] = [];
 
     if (isAnonymous) {
       // Anonymous mode - generate a random person
@@ -39,7 +39,7 @@ Requirements:
 - Aspect ratio 4:3
 - The character should look peaceful and focused`;
       
-      messageContent.push({ type: "text", text: prompt });
+      parts.push({ text: prompt });
     } else {
       // With reference image - create based on the person
       prompt = `Look at this reference image of a person. Create a new artistic illustration showing this same person studying in a ${backgroundPrompt || "cozy study room with warm lighting"}.
@@ -53,33 +53,46 @@ Requirements:
 - Aspect ratio 4:3
 - The person should look similar to the reference but in illustration style`;
 
-      messageContent.push({ type: "text", text: prompt });
-      messageContent.push({
-        type: "image_url",
-        image_url: {
-          url: idolImageBase64.startsWith('data:') ? idolImageBase64 : `data:image/jpeg;base64,${idolImageBase64}`
+      parts.push({ text: prompt });
+      
+      // Extract base64 data (remove data URL prefix if present)
+      let base64Data = idolImageBase64;
+      let mimeType = "image/jpeg";
+      
+      if (idolImageBase64.startsWith('data:')) {
+        const match = idolImageBase64.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          mimeType = match[1];
+          base64Data = match[2];
+        }
+      }
+      
+      parts.push({
+        inlineData: {
+          mimeType: mimeType,
+          data: base64Data
         }
       });
     }
 
-    console.log(`Using Lovable AI (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
+    console.log(`Using Gemini API (${isAnonymous ? 'anonymous mode' : 'with reference'})...`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
-        messages: [{ role: "user", content: messageContent }],
-        modalities: ["image", "text"]
+        contents: [{ parts }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"]
+        }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("API error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -88,28 +101,42 @@ Requirements:
         );
       }
       
-      if (response.status === 402) {
+      if (response.status === 400) {
         return new Response(
-          JSON.stringify({ error: "Cần nạp thêm credits. Vui lòng liên hệ admin." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Yêu cầu không hợp lệ. Vui lòng thử ảnh khác." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      throw new Error(`API error: ${response.status}`);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("API response received");
+    console.log("Gemini API response received");
 
-    // Extract image from Lovable AI response
-    const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const textResponse = data.choices?.[0]?.message?.content || "";
+    // Extract image from Gemini response
+    let generatedImageUrl = null;
+    let textResponse = "";
+    
+    const candidates = data.candidates;
+    if (candidates && candidates[0]?.content?.parts) {
+      for (const part of candidates[0].content.parts) {
+        if (part.text) {
+          textResponse = part.text;
+        }
+        if (part.inlineData) {
+          const mimeType = part.inlineData.mimeType || "image/png";
+          const base64Data = part.inlineData.data;
+          generatedImageUrl = `data:${mimeType};base64,${base64Data}`;
+        }
+      }
+    }
 
     if (!generatedImageUrl) {
       console.error("No image in response:", JSON.stringify(data).substring(0, 1000));
       
       // If model refuses, return helpful message
-      if (textResponse.toLowerCase().includes("can't") || textResponse.toLowerCase().includes("cannot")) {
+      if (textResponse.toLowerCase().includes("can't") || textResponse.toLowerCase().includes("cannot") || textResponse.toLowerCase().includes("sorry")) {
         return new Response(
           JSON.stringify({ 
             error: isAnonymous 
