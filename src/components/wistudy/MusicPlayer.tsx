@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Music2, X, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
+import { Music2, X, ChevronUp, ChevronDown, GripVertical, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MusicSelection } from '@/types/wistudy';
 import { cn } from '@/lib/utils';
@@ -8,9 +8,10 @@ interface MusicPlayerProps {
   music: MusicSelection;
   onClose: () => void;
   isVisible: boolean;
+  muted?: boolean;
 }
 
-export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
+export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [position, setPosition] = useState({ x: 16, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
@@ -152,14 +153,21 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       {/* Player */}
       {isExpanded && (
         <div className="w-80 h-48">
-          <iframe
-            src={music.url}
-            width="100%"
-            height="100%"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="border-0"
-          />
+          {muted ? (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted/30">
+              <VolumeX className="w-12 h-12 text-muted-foreground mb-2" />
+              <span className="text-sm text-muted-foreground">Đã tắt âm thanh</span>
+            </div>
+          ) : (
+            <iframe
+              src={music.url}
+              width="100%"
+              height="100%"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="border-0"
+            />
+          )}
         </div>
       )}
     </div>

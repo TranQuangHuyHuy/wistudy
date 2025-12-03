@@ -222,6 +222,7 @@ export default function StudyRoomPage() {
             music={userData.selectedMusic} 
             onClose={() => setShowMusicPlayer(false)}
             isVisible={showMusicPlayer}
+            muted={isMuted}
           />
         )}
       </main>
