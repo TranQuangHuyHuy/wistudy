@@ -99,7 +99,7 @@ export default function GeneratePage() {
       return;
     }
     setGeneratedImage(generatedPreview);
-    navigate('/pomodoro-setup');
+    navigate('/choose-music');
   };
 
   return (
@@ -118,7 +118,7 @@ export default function GeneratePage() {
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
           <div className="flex justify-center">
-            <StepIndicator currentStep={3} totalSteps={4} />
+            <StepIndicator currentStep={3} totalSteps={6} />
           </div>
 
           {/* Title */}
@@ -191,7 +191,7 @@ export default function GeneratePage() {
           onClick={handleContinue}
           disabled={isGenerating || !generatedPreview}
         >
-          Thiết lập Pomodoro
+          Chọn nhạc
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </footer>
