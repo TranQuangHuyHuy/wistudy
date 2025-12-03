@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Music2, X, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MusicSelection } from '@/types/wistudy';
@@ -13,12 +13,11 @@ interface MusicPlayerProps {
 export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [position, setPosition] = useState({ x: 16, y: 100 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const playerRef = useRef<HTMLDivElement>(null);
 
-  // Get actual element dimensions for boundary calculation
-  const getElementSize = () => {
+  const getElementSize = useCallback(() => {
     if (playerRef.current) {
       return {
         width: playerRef.current.offsetWidth,
@@ -26,37 +25,37 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       };
     }
     return { width: 320, height: isExpanded ? 240 : 50 };
-  };
+  }, [isExpanded]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !dragRef.current) return;
+      if (!isDraggingRef.current) return;
       
-      const deltaX = e.clientX - dragRef.current.startX;
-      const deltaY = e.clientY - dragRef.current.startY;
+      e.preventDefault();
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
       
       const size = getElementSize();
-      const newX = Math.max(0, Math.min(window.innerWidth - size.width, dragRef.current.initialX + deltaX));
-      const newY = Math.max(0, Math.min(window.innerHeight - size.height, dragRef.current.initialY + deltaY));
+      const newX = Math.max(0, Math.min(window.innerWidth - size.width, dragStartRef.current.posX + deltaX));
+      const newY = Math.max(0, Math.min(window.innerHeight - size.height, dragStartRef.current.posY + deltaY));
       
       setPosition({ x: newX, y: newY });
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
-      dragRef.current = null;
+      isDraggingRef.current = false;
+      document.body.style.userSelect = '';
     };
 
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
+    // Always attach listeners
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isExpanded]);
+  }, [getElementSize]);
 
   // Adjust position when expanding to keep within bounds
   useEffect(() => {
@@ -65,7 +64,7 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       x: Math.max(0, Math.min(window.innerWidth - size.width, prev.x)),
       y: Math.max(0, Math.min(window.innerHeight - size.height, prev.y))
     }));
-  }, [isExpanded]);
+  }, [isExpanded, getElementSize]);
 
   // Handle window resize
   useEffect(() => {
@@ -79,16 +78,17 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isExpanded]);
+  }, [getElementSize]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsDragging(true);
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      initialX: position.x,
-      initialY: position.y,
+    isDraggingRef.current = true;
+    document.body.style.userSelect = 'none';
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      posX: position.x,
+      posY: position.y,
     };
   };
 
@@ -96,8 +96,7 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
     <div 
       ref={playerRef}
       className={cn(
-        "fixed z-50 bg-background/95 backdrop-blur-sm rounded-2xl border border-border shadow-xl overflow-hidden transition-all duration-300",
-        isDragging && "shadow-2xl",
+        "fixed z-50 bg-background/95 backdrop-blur-sm rounded-2xl border border-border shadow-xl overflow-hidden",
         !isVisible && "pointer-events-none opacity-0"
       )}
       style={{ left: position.x, top: position.y }}
