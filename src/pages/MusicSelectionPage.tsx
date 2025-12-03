@@ -295,7 +295,7 @@ export default function MusicSelectionPage() {
             disabled={!canContinue()}
             className="flex-1 shadow-soft"
           >
-            Thiết lập Pomodoro
+            Pomodoro
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
