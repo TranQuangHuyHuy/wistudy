@@ -6,7 +6,6 @@ import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { ImageUploader } from '@/components/wistudy/ImageUploader';
 import { useWiStudy } from '@/contexts/WiStudyContext';
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function UploadIdolPage() {
@@ -36,7 +35,6 @@ export default function UploadIdolPage() {
 
   const handleContinue = () => {
     if (!isAnonymous && !localIdolImage) {
-      toast.error('Vui lòng tải ảnh lên hoặc chọn chế độ ẩn danh');
       return;
     }
     setIdolImage(isAnonymous ? 'anonymous' : localIdolImage);

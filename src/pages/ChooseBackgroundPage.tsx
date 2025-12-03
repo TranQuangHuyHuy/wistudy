@@ -7,7 +7,6 @@ import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { BackgroundCard } from '@/components/wistudy/BackgroundCard';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
-import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function ChooseBackgroundPage() {
@@ -50,7 +49,6 @@ export default function ChooseBackgroundPage() {
 
   const handleContinue = () => {
     if (!selected) {
-      toast.error('Vui lòng chọn background');
       return;
     }
     setSelectedBackground(selected === 'custom' ? customBackground : selected);
