@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Youtube, Music2, Headphones, TreePine, Piano, Radio } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Youtube, Music2, Headphones, TreePine, Piano, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
-import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { musicPlaylists, MusicPlaylist } from '@/data/musicPlaylists';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,30 +107,27 @@ export default function MusicSelectionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate('/generate')}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Logo />
-        </div>
-        <ThemeToggle />
+      <header className="flex items-center justify-between p-6">
+        <button onClick={() => navigate('/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        </button>
+        <Logo size="sm" />
+        <div className="w-9" />
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-4 py-6">
-        <div className="w-full max-w-md space-y-6">
-          <StepIndicator currentStep={4} totalSteps={6} />
+      <main className="flex-1 px-6 pb-6 page-transition">
+        <div className="max-w-md mx-auto space-y-6">
+          {/* Step Indicator */}
+          <div className="flex justify-center">
+            <StepIndicator currentStep={4} totalSteps={6} />
+          </div>
           
+          {/* Title */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Chọn nhạc cho {lastName}
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -259,21 +255,24 @@ export default function MusicSelectionPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-4 border-t border-border">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
         <div className="max-w-md mx-auto flex gap-3">
           <Button 
             variant="outline" 
+            size="lg"
             onClick={handleSkip}
-            className="flex-1"
+            className="flex-1 shadow-soft"
           >
             Bỏ qua
           </Button>
           <Button 
+            size="lg"
             onClick={handleContinue}
             disabled={!canContinue()}
-            className="flex-1"
+            className="flex-1 shadow-soft"
           >
             Tiếp tục
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </footer>
