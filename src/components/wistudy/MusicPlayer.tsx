@@ -12,10 +12,21 @@ interface MusicPlayerProps {
 
 export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [position, setPosition] = useState({ x: 16, y: window.innerHeight - 250 });
+  const [position, setPosition] = useState({ x: 16, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+
+  // Get actual element dimensions for boundary calculation
+  const getElementSize = () => {
+    if (playerRef.current) {
+      return {
+        width: playerRef.current.offsetWidth,
+        height: playerRef.current.offsetHeight
+      };
+    }
+    return { width: 320, height: isExpanded ? 240 : 50 };
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -24,8 +35,9 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       const deltaX = e.clientX - dragRef.current.startX;
       const deltaY = e.clientY - dragRef.current.startY;
       
-      const newX = Math.max(0, Math.min(window.innerWidth - 320, dragRef.current.initialX + deltaX));
-      const newY = Math.max(0, Math.min(window.innerHeight - 100, dragRef.current.initialY + deltaY));
+      const size = getElementSize();
+      const newX = Math.max(0, Math.min(window.innerWidth - size.width, dragRef.current.initialX + deltaX));
+      const newY = Math.max(0, Math.min(window.innerHeight - size.height, dragRef.current.initialY + deltaY));
       
       setPosition({ x: newX, y: newY });
     };
@@ -44,7 +56,30 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, isExpanded]);
+
+  // Adjust position when expanding to keep within bounds
+  useEffect(() => {
+    const size = getElementSize();
+    setPosition(prev => ({
+      x: Math.max(0, Math.min(window.innerWidth - size.width, prev.x)),
+      y: Math.max(0, Math.min(window.innerHeight - size.height, prev.y))
+    }));
+  }, [isExpanded]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const size = getElementSize();
+      setPosition(prev => ({
+        x: Math.max(0, Math.min(window.innerWidth - size.width, prev.x)),
+        y: Math.max(0, Math.min(window.innerHeight - size.height, prev.y))
+      }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isExpanded]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
