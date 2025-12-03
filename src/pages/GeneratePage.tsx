@@ -16,7 +16,9 @@ export default function GeneratePage() {
   const hasGeneratedRef = useRef(false);
   const [userName, setUserName] = useState<string>('bạn');
 
-  const selectedBg = backgrounds.find(b => b.id === userData.selectedBackground);
+  const isTextPrompt = userData.selectedBackground?.startsWith('text:');
+  const textPromptValue = isTextPrompt ? userData.selectedBackground?.substring(5) : null;
+  const selectedBg = !isTextPrompt ? backgrounds.find(b => b.id === userData.selectedBackground) : null;
   const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function GeneratePage() {
     setIsGenerating(true);
 
     try {
-      const backgroundPrompt = selectedBg?.prompt || 'cozy modern study room with warm lighting';
+      const backgroundPrompt = textPromptValue || selectedBg?.prompt || 'cozy modern study room with warm lighting';
       
       const { data, error } = await supabase.functions.invoke('generate-study-image', {
         body: {
@@ -125,7 +127,7 @@ export default function GeneratePage() {
               Ảnh học tập
             </h1>
             <p className="text-muted-foreground text-sm">
-              {selectedBg ? `Background: ${selectedBg.nameVi}` : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
+              {selectedBg ? `Background: ${selectedBg.nameVi}` : isTextPrompt ? 'Background từ mô tả' : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
             </p>
           </div>
 
