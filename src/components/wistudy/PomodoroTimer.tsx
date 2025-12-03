@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // Play notification sound using Web Audio API
-const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete') => {
+const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete' | 'tick') => {
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   
-  const playTone = (frequency: number, duration: number, delay: number = 0) => {
+  const playTone = (frequency: number, duration: number, delay: number = 0, volume: number = 0.3) => {
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -18,7 +18,7 @@ const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete') => 
     oscillator.type = 'sine';
     
     const startTime = audioContext.currentTime + delay;
-    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.setValueAtTime(volume, startTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
     
     oscillator.start(startTime);
@@ -26,6 +26,10 @@ const playNotificationSound = (type: 'study-end' | 'break-end' | 'complete') => 
   };
 
   switch (type) {
+    case 'tick':
+      // Soft tick sound for last minute warning
+      playTone(880, 0.08, 0, 0.15); // A5 - short soft beep
+      break;
     case 'study-end':
       // Gentle chime - time to rest
       playTone(523, 0.3, 0);    // C5
@@ -86,7 +90,14 @@ export function PomodoroTimer({
 
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimeLeft(prev => {
+          const newTime = prev - 1;
+          // Play tick sound during last 60 seconds
+          if (newTime > 0 && newTime <= 60) {
+            playNotificationSound('tick');
+          }
+          return newTime;
+        });
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       if (isBreak) {
