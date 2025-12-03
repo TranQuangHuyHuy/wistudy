@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils';
 interface MusicPlayerProps {
   music: MusicSelection;
   onClose: () => void;
+  isVisible: boolean;
 }
 
-export function MusicPlayer({ music, onClose }: MusicPlayerProps) {
+export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 16, y: window.innerHeight - 250 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
@@ -57,16 +57,13 @@ export function MusicPlayer({ music, onClose }: MusicPlayerProps) {
     };
   };
 
-  if (isMinimized) {
-    return null;
-  }
-
   return (
     <div 
       ref={playerRef}
       className={cn(
-        "fixed z-50 bg-background/95 backdrop-blur-sm rounded-2xl border border-border shadow-xl overflow-hidden transition-shadow duration-300",
-        isDragging && "shadow-2xl"
+        "fixed z-50 bg-background/95 backdrop-blur-sm rounded-2xl border border-border shadow-xl overflow-hidden transition-all duration-300",
+        isDragging && "shadow-2xl",
+        !isVisible && "pointer-events-none opacity-0"
       )}
       style={{ left: position.x, top: position.y }}
     >
