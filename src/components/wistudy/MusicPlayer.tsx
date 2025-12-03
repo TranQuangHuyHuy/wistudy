@@ -14,7 +14,7 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [position, setPosition] = useState({ x: 16, y: 100 });
   const isDraggingRef = useRef(false);
-  const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
+  const offsetRef = useRef({ x: 0, y: 0 });
   const playerRef = useRef<HTMLDivElement>(null);
 
   const getElementSize = useCallback(() => {
@@ -32,22 +32,33 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
       if (!isDraggingRef.current) return;
       
       e.preventDefault();
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
       
       const size = getElementSize();
-      const newX = Math.max(0, Math.min(window.innerWidth - size.width, dragStartRef.current.posX + deltaX));
-      const newY = Math.max(0, Math.min(window.innerHeight - size.height, dragStartRef.current.posY + deltaY));
+      // Calculate new position based on mouse position minus offset
+      const newX = e.clientX - offsetRef.current.x;
+      const newY = e.clientY - offsetRef.current.y;
       
-      setPosition({ x: newX, y: newY });
+      // Clamp to screen bounds
+      const clampedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
+      const clampedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+      
+      setPosition({ x: clampedX, y: clampedY });
+      
+      // Update offset when hitting boundary to prevent "snapping back"
+      if (clampedX !== newX) {
+        offsetRef.current.x = e.clientX - clampedX;
+      }
+      if (clampedY !== newY) {
+        offsetRef.current.y = e.clientY - clampedY;
+      }
     };
 
     const handleMouseUp = () => {
       isDraggingRef.current = false;
       document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
 
-    // Always attach listeners
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
@@ -84,11 +95,11 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
     e.preventDefault();
     isDraggingRef.current = true;
     document.body.style.userSelect = 'none';
-    dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      posX: position.x,
-      posY: position.y,
+    document.body.style.cursor = 'grabbing';
+    // Store offset from mouse to element's top-left corner
+    offsetRef.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
     };
   };
 
@@ -103,7 +114,7 @@ export function MusicPlayer({ music, onClose, isVisible }: MusicPlayerProps) {
     >
       {/* Header - Draggable */}
       <div 
-        className="flex items-center justify-between p-2 border-b border-border bg-muted/50 cursor-move select-none"
+        className="flex items-center justify-between p-2 border-b border-border bg-muted/50 cursor-grab select-none active:cursor-grabbing"
         onMouseDown={handleMouseDown}
       >
         <div className="flex items-center gap-2 px-1">
