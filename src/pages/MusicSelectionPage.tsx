@@ -213,6 +213,25 @@ export default function MusicSelectionPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Preview Player */}
+              {selectedPlaylist && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Nghe thử: {selectedPlaylist.nameVi}
+                  </p>
+                  <div className="rounded-xl overflow-hidden border border-border bg-card">
+                    <iframe
+                      src={selectedPlaylist.embedUrl + (selectedPlaylist.type === 'youtube' ? '?autoplay=0' : '?utm_source=generator')}
+                      width="100%"
+                      height={selectedPlaylist.type === 'youtube' ? '200' : '152'}
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="block"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
