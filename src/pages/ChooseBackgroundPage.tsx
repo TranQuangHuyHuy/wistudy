@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Upload } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -8,12 +8,15 @@ import { BackgroundCard } from '@/components/wistudy/BackgroundCard';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
 import { supabase } from '@/integrations/supabase/client';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ChooseBackgroundPage() {
   const navigate = useNavigate();
   const { userData, setSelectedBackground } = useWiStudy();
   const [selected, setSelected] = useState<string | null>(userData.selectedBackground);
   const [customBackground, setCustomBackground] = useState<string | null>(null);
+  const [textPrompt, setTextPrompt] = useState<string>('');
+  const [showTextInput, setShowTextInput] = useState(false);
   const [userName, setUserName] = useState<string>('bạn');
 
   useEffect(() => {
@@ -42,18 +45,46 @@ export default function ChooseBackgroundPage() {
         const result = reader.result as string;
         setCustomBackground(result);
         setSelected('custom');
+        setShowTextInput(false);
+        setTextPrompt('');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleContinue = () => {
-    if (!selected) {
-      return;
+  const handleTextPromptSelect = () => {
+    if (selected === 'text-prompt') {
+      setSelected(null);
+      setShowTextInput(false);
+      setTextPrompt('');
+    } else {
+      setSelected('text-prompt');
+      setShowTextInput(true);
+      setCustomBackground(null);
     }
-    setSelectedBackground(selected === 'custom' ? customBackground : selected);
+  };
+
+  const handlePresetSelect = (bgId: string) => {
+    setSelected(selected === bgId ? null : bgId);
+    setShowTextInput(false);
+    setTextPrompt('');
+    setCustomBackground(null);
+  };
+
+  const handleContinue = () => {
+    if (!selected) return;
+    
+    if (selected === 'text-prompt' && textPrompt.trim()) {
+      setSelectedBackground(`text:${textPrompt.trim()}`);
+    } else if (selected === 'custom') {
+      setSelectedBackground(customBackground);
+    } else {
+      setSelectedBackground(selected);
+    }
     navigate('/generate');
   };
+
+  const isValid = selected && (selected !== 'text-prompt' || textPrompt.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
@@ -91,7 +122,7 @@ export default function ChooseBackgroundPage() {
                 key={bg.id}
                 background={bg}
                 isSelected={selected === bg.id}
-                onSelect={() => setSelected(selected === bg.id ? null : bg.id)}
+                onSelect={() => handlePresetSelect(bg.id)}
               />
             ))}
             
@@ -122,7 +153,40 @@ export default function ChooseBackgroundPage() {
                 onChange={handleCustomUpload}
               />
             </label>
+
+            {/* Text Prompt Option */}
+            <button
+              onClick={handleTextPromptSelect}
+              className={`
+                relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video
+                border-2 ${selected === 'text-prompt' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
+                flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
+              `}
+            >
+              <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                <Type className="w-6 h-6 mb-1.5" />
+                <span className="text-xs font-medium">Mô tả</span>
+              </div>
+            </button>
           </div>
+
+          {/* Text Input Area */}
+          {showTextInput && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="text-sm font-medium text-foreground">
+                Mô tả không gian bạn muốn
+              </label>
+              <Textarea
+                placeholder="Ví dụ: Phòng học với cửa sổ nhìn ra biển, ánh hoàng hôn ấm áp..."
+                value={textPrompt}
+                onChange={(e) => setTextPrompt(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                AI sẽ tạo background dựa trên mô tả của bạn
+              </p>
+            </div>
+          )}
         </div>
       </main>
 
@@ -132,7 +196,7 @@ export default function ChooseBackgroundPage() {
           size="lg"
           className="w-full shadow-soft"
           onClick={handleContinue}
-          disabled={!selected}
+          disabled={!isValid}
         >
           Tạo ảnh
           <ArrowRight className="w-4 h-4 ml-2" />
