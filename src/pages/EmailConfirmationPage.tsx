@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -12,39 +11,37 @@ export default function EmailConfirmationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || '';
-  const [otp, setOtp] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
 
-  const handleVerify = async () => {
-    if (otp.length !== 6) {
-      toast.error('Vui lòng nhập đầy đủ mã xác nhận');
-      return;
-    }
-
-    setIsVerifying(true);
-    try {
-      const response = await supabase.functions.invoke('verify-otp', {
-        body: { email, code: otp }
-      });
-
-      if (response.error || !response.data?.valid) {
-        toast.error('Mã xác nhận không đúng hoặc đã hết hạn');
-      } else {
+  useEffect(() => {
+    // Check if user just verified their email (redirected from magic link)
+    const checkVerification = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email_confirmed_at) {
         setIsVerified(true);
-        // Sign out after verification to require login
         await supabase.auth.signOut();
         setTimeout(() => {
           navigate('/login');
         }, 2000);
       }
-    } catch (err) {
-      toast.error('Có lỗi xảy ra');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+    };
+
+    // Listen for auth state changes (when user clicks magic link)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+        setIsVerified(true);
+        await supabase.auth.signOut();
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
+    });
+
+    checkVerification();
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleResend = async () => {
     if (!email) {
@@ -54,14 +51,15 @@ export default function EmailConfirmationPage() {
 
     setIsResending(true);
     try {
-      const response = await supabase.functions.invoke('send-otp', {
-        body: { email }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email
       });
 
-      if (response.error) {
-        toast.error('Gửi lại mã thất bại');
+      if (error) {
+        toast.error('Gửi lại email thất bại');
       } else {
-        toast.success('Đã gửi lại mã xác nhận');
+        toast.success('Đã gửi lại email xác nhận');
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
@@ -114,65 +112,43 @@ export default function EmailConfirmationPage() {
           {/* Content */}
           <div className="space-y-4">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              Xác nhận email của bạn
+              Kiểm tra email của bạn
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Chúng tôi đã gửi mã xác nhận 6 số đến{' '}
+              Chúng tôi đã gửi link xác nhận đến{' '}
               <span className="font-medium text-foreground">{email || 'email của bạn'}</span>
             </p>
           </div>
 
-          {/* OTP Input */}
-          <div className="bg-card p-6 rounded-xl border border-border/50 space-y-6">
-            <div className="flex justify-center">
-              <InputOTP
-                maxLength={6}
-                value={otp}
-                onChange={setOtp}
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            <Button
-              onClick={handleVerify}
-              className="w-full"
-              disabled={isVerifying || otp.length !== 6}
-            >
-              {isVerifying && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Xác nhận
-            </Button>
-
-            <div className="text-sm text-muted-foreground">
-              Không nhận được mã?{' '}
-              <button
-                onClick={handleResend}
-                disabled={isResending}
-                className="text-primary font-medium hover:underline disabled:opacity-50"
-              >
-                {isResending ? 'Đang gửi...' : 'Gửi lại'}
-              </button>
-            </div>
+          {/* Instructions */}
+          <div className="bg-card p-6 rounded-xl border border-border/50 space-y-4 text-left">
+            <p className="text-sm text-foreground font-medium">Các bước tiếp theo:</p>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+              <li>Mở email và tìm thư từ WiStudy</li>
+              <li>Click nút <strong>"Xác minh Email"</strong> trong email</li>
+              <li>Sau khi xác nhận, quay lại đây để đăng nhập</li>
+            </ol>
           </div>
 
-          {/* Info box */}
-          <div className="bg-card p-4 rounded-xl border border-border/50 text-left space-y-2">
+          {/* Resend */}
+          <div className="bg-card p-4 rounded-xl border border-border/50 space-y-3">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Lưu ý:</span> Email có thể mất vài phút để đến. 
-              Hãy kiểm tra cả thư mục spam nếu bạn không thấy email.
+              Không nhận được email? Kiểm tra thư mục spam hoặc
             </p>
+            <Button
+              onClick={handleResend}
+              variant="outline"
+              disabled={isResending}
+              className="w-full"
+            >
+              {isResending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Gửi lại email xác nhận
+            </Button>
           </div>
 
           {/* Back to login */}
           <Link to="/login">
-            <Button variant="outline" className="w-full mt-4">
+            <Button variant="ghost" className="w-full mt-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Quay lại đăng nhập
             </Button>
