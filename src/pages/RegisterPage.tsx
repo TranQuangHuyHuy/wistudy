@@ -69,12 +69,15 @@ export default function RegisterPage() {
       if (error) {
         if (error.message.includes('already registered')) {
           toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.');
+        } else if (error.message.includes('Email not confirmed')) {
+          // User exists but not confirmed, redirect to confirmation
+          navigate('/email-confirmation', { state: { email } });
         } else {
           toast.error('Đăng ký thất bại: ' + error.message);
         }
       } else {
-        // Redirect to email confirmation page
-        navigate('/email-confirmation');
+        // Redirect to email confirmation page with email
+        navigate('/email-confirmation', { state: { email } });
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
