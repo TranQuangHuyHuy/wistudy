@@ -229,7 +229,7 @@ export default function MusicSelectionPage() {
                           : `${selectedPlaylist.embedUrl}?utm_source=generator&autoplay=1`
                       }
                       width="100%"
-                      height={selectedPlaylist.type === 'youtube' ? '100' : '152'}
+                      height="152"
                       allow="autoplay; clipboard-write; encrypted-media"
                       loading="eager"
                       className="block"
