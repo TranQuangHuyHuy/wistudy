@@ -17,12 +17,8 @@ export default function LandingPage() {
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
-        // OAuth callback detected, wait for session to be established
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          navigate('/upload-idol', { replace: true });
-          return;
-        }
+        // OAuth callback detected, clear the hash and stay on landing page
+        window.history.replaceState(null, '', window.location.pathname);
       }
 
       // Check for existing session
