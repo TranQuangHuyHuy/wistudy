@@ -2,9 +2,3 @@ project_id = "lhwgzhmgysbjtmckbdgo"
 
 [functions.generate-study-image]
 verify_jwt = false
-
-[functions.send-otp]
-verify_jwt = false
-
-[functions.verify-otp]
-verify_jwt = false
