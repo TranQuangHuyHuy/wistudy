@@ -73,10 +73,8 @@ export default function RegisterPage() {
           toast.error('Đăng ký thất bại: ' + error.message);
         }
       } else {
-        // Sign out to prevent auto-login, then redirect to login page
-        await supabase.auth.signOut();
-        toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-        navigate('/login');
+        // Redirect to email confirmation page
+        navigate('/email-confirmation');
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
