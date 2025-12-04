@@ -55,7 +55,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -67,18 +67,24 @@ export default function RegisterPage() {
       });
       
       if (error) {
-        if (error.message.includes('already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.');
         } else if (error.message.includes('Email not confirmed')) {
-          // User exists but not confirmed, redirect to confirmation page
           navigate('/email-confirmation', { state: { email } });
         } else {
           toast.error('Đăng ký thất bại: ' + error.message);
         }
-      } else {
-        // Redirect to email confirmation page
-        navigate('/email-confirmation', { state: { email } });
+        return;
       }
+      
+      // Check if user already exists (Supabase returns user with empty identities for existing email)
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.');
+        return;
+      }
+      
+      // Success - redirect to email confirmation page
+      navigate('/email-confirmation', { state: { email } });
     } catch (err) {
       toast.error('Có lỗi xảy ra');
     } finally {
