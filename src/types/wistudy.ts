@@ -2,6 +2,7 @@ export interface UserData {
   idolImage: string | null;
   userImage: string | null;
   selectedBackground: string | null;
+  backgroundVideo: string | null;
   generatedImage: string | null;
   pomodoroSettings: PomodoroSettings;
   selectedMusic: MusicSelection | null;
