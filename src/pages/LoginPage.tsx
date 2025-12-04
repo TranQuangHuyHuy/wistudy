@@ -15,7 +15,7 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
 
-// Force redeploy v6
+// Force redeploy v7
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -26,14 +26,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     let isMounted = true;
-    const hasHashTokens = window.location.hash && window.location.hash.includes('access_token');
     
-    // Set up auth state listener FIRST - this handles OAuth callback
+    // Set up auth state listener for future auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
       
       if (session?.user) {
-        // Clear hash from URL if present
         if (window.location.hash) {
           window.history.replaceState(null, '', window.location.pathname);
         }
@@ -41,39 +39,20 @@ export default function LoginPage() {
       }
     });
 
-    // Only check existing session if NO hash tokens
-    // If hash tokens exist, let onAuthStateChange handle it
-    if (!hasHashTokens) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!isMounted) return;
-        if (session?.user) {
-          navigate('/upload-idol', { replace: true });
-        } else {
-          setIsCheckingAuth(false);
-        }
-      });
-    } else {
-      // Hash tokens present - add timeout fallback in case onAuthStateChange doesn't fire
-      const timeout = setTimeout(() => {
-        if (!isMounted) return;
-        // Force check session after timeout
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (!isMounted) return;
-          if (session?.user) {
-            window.history.replaceState(null, '', window.location.pathname);
-            navigate('/upload-idol', { replace: true });
-          } else {
-            setIsCheckingAuth(false);
-          }
-        });
-      }, 3000);
+    // ALWAYS check current session immediately
+    // Supabase client already processed hash tokens when page loaded
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
       
-      return () => {
-        isMounted = false;
-        clearTimeout(timeout);
-        subscription.unsubscribe();
-      };
-    }
+      if (session?.user) {
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        navigate('/upload-idol', { replace: true });
+      } else {
+        setIsCheckingAuth(false);
+      }
+    });
 
     return () => {
       isMounted = false;
