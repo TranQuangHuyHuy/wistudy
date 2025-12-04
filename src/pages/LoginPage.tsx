@@ -15,7 +15,7 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
 
-// Force redeploy v9
+// Force redeploy v10
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,8 +29,9 @@ export default function LoginPage() {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
     }
-    navigate('/upload-idol', { replace: true });
-  }, [navigate]);
+    // Use window.location for more reliable redirect in production
+    window.location.href = '/upload-idol';
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -122,7 +123,7 @@ export default function LoginPage() {
       subscription.unsubscribe();
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [navigate, redirectToHome]);
+  }, [redirectToHome]);
 
   if (isCheckingAuth) {
     return (
