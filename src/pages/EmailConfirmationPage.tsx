@@ -25,13 +25,11 @@ export default function EmailConfirmationPage() {
 
     setIsVerifying(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'signup'
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { email, code: otp }
       });
 
-      if (error) {
+      if (response.error || !response.data?.valid) {
         toast.error('Mã xác nhận không đúng hoặc đã hết hạn');
       } else {
         setIsVerified(true);
@@ -56,13 +54,12 @@ export default function EmailConfirmationPage() {
 
     setIsResending(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { email }
       });
 
-      if (error) {
-        toast.error('Gửi lại mã thất bại: ' + error.message);
+      if (response.error) {
+        toast.error('Gửi lại mã thất bại');
       } else {
         toast.success('Đã gửi lại mã xác nhận');
       }

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,45 +9,57 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailHookPayload {
-  user: {
-    email: string;
-    user_metadata?: {
-      full_name?: string;
-    };
-  };
-  email_data: {
-    token: string;
-    token_hash: string;
-    redirect_to: string;
-    email_action_type: string;
-  };
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 serve(async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const payload: EmailHookPayload = await req.json();
-    console.log("Email hook payload:", JSON.stringify(payload, null, 2));
-
-    const { user, email_data } = payload;
-    const { token, email_action_type } = email_data;
-
-    // Only handle signup confirmation emails
-    if (email_action_type !== "signup" && email_action_type !== "email_change") {
-      console.log("Skipping email type:", email_action_type);
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+    const { email, fullName } = await req.json();
+    
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Email is required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
-    const userName = user.user_metadata?.full_name || "bạn";
-    const otpCode = token; // Supabase provides the OTP token
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Generate OTP
+    const otpCode = generateOTP();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Delete any existing codes for this email
+    await supabase
+      .from("email_verification_codes")
+      .delete()
+      .eq("email", email);
+
+    // Store OTP in database
+    const { error: insertError } = await supabase
+      .from("email_verification_codes")
+      .insert({
+        email,
+        code: otpCode,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (insertError) {
+      console.error("Error storing OTP:", insertError);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate OTP" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const userName = fullName || "bạn";
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -92,25 +105,22 @@ serve(async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "WiStudy <onboarding@resend.dev>",
-      to: [user.email],
+      to: [email],
       subject: `${otpCode} là mã xác nhận WiStudy của bạn`,
       html: emailHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("OTP email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({ success: true, message: "OTP sent successfully" }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
   } catch (error: any) {
-    console.error("Error in email-hook function:", error);
+    console.error("Error in send-otp function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 });
