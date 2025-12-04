@@ -3,12 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { BookOpen, Sparkles, Clock, ArrowRight, Loader2 } from 'lucide-react';
+import { BookOpen, Sparkles, Clock, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     // Handle OAuth callback - check for tokens in URL hash
@@ -25,34 +25,20 @@ export default function LandingPage() {
         }
       }
 
-      // Set up auth state listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (session?.user) {
-          navigate('/upload-idol', { replace: true });
-        }
-      });
-
       // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        navigate('/upload-idol', { replace: true });
-        return;
-      }
-
-      setIsLoading(false);
-      return () => subscription.unsubscribe();
+      setIsLoggedIn(!!session?.user);
     };
 
-    handleAuthCallback();
-  }, [navigate]);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+    handleAuthCallback();
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col">
@@ -97,8 +83,8 @@ export default function LandingPage() {
           {/* CTA */}
           <div className="pt-4">
             <Button asChild size="lg" className="w-full">
-              <Link to="/login">
-                Bắt đầu ngay
+              <Link to={isLoggedIn ? "/upload-idol" : "/login"}>
+                {isLoggedIn ? "Tiếp tục học" : "Bắt đầu ngay"}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
