@@ -195,7 +195,7 @@ export default function ChooseBackgroundPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm flex justify-center">
         <Button
           size="lg"
           className="w-full md:max-w-md mx-auto shadow-soft"
