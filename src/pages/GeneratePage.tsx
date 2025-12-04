@@ -187,7 +187,7 @@ export default function GeneratePage() {
       <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
         <Button
           size="lg"
-          className="w-full md:max-w-sm md:mx-auto shadow-soft"
+          className="w-full md:max-w-md mx-auto shadow-soft"
           onClick={handleContinue}
           disabled={isGenerating || !generatedPreview}
         >
