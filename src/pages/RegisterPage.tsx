@@ -13,7 +13,11 @@ import { z } from 'zod';
 const registerSchema = z.object({
   fullName: z.string().trim().min(2, { message: "Họ tên tối thiểu 2 ký tự" }).max(100),
   email: z.string().trim().email({ message: "Email không hợp lệ" }),
-  password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" }),
+  password: z.string()
+    .min(8, { message: "Mật khẩu tối thiểu 8 ký tự" })
+    .regex(/[A-Z]/, { message: "Mật khẩu phải có ít nhất 1 chữ hoa" })
+    .regex(/[a-z]/, { message: "Mật khẩu phải có ít nhất 1 chữ thường" })
+    .regex(/[0-9]/, { message: "Mật khẩu phải có ít nhất 1 số" }),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Mật khẩu xác nhận không khớp",
@@ -143,11 +147,11 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự, chữ hoa, thường, số"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
             <div className="space-y-2">
@@ -159,7 +163,7 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
             <Button
