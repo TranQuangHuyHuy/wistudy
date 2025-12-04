@@ -27,40 +27,24 @@ export default function LoginPage() {
     let isMounted = true;
 
     const handleAuth = async () => {
-      console.log('[LoginPage] Starting auth handling...');
-      console.log('[LoginPage] Current hash:', window.location.hash);
-
-      // Check if hash contains OAuth tokens
+      // Check if hash contains OAuth tokens (only redirect on OAuth callback)
       const hash = window.location.hash;
       if (hash && hash.includes('access_token')) {
-        console.log('[LoginPage] OAuth tokens detected in hash, parsing...');
-        
         try {
-          // Parse hash parameters manually
           const params = new URLSearchParams(hash.substring(1));
           const accessToken = params.get('access_token');
           const refreshToken = params.get('refresh_token');
-          
-          console.log('[LoginPage] Tokens parsed:', !!accessToken, !!refreshToken);
 
           if (accessToken && refreshToken) {
-            // Set session manually with extracted tokens
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken,
             });
 
-            console.log('[LoginPage] setSession result:', !!data?.session, error?.message);
-
             if (data?.session && isMounted) {
-              // Clear hash and redirect
               window.history.replaceState(null, '', window.location.pathname);
               window.location.href = '/upload-idol';
               return;
-            }
-
-            if (error) {
-              console.error('[LoginPage] setSession error:', error);
             }
           }
         } catch (err) {
@@ -68,24 +52,13 @@ export default function LoginPage() {
         }
       }
 
-      // Check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('[LoginPage] Existing session check:', !!session?.user);
-      
-      if (session?.user && isMounted) {
-        window.location.href = '/upload-idol';
-        return;
-      }
-
       if (isMounted) {
         setIsCheckingAuth(false);
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener - only redirect on SIGNED_IN event (new login)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[LoginPage] Auth state changed:', event, !!session?.user);
-      
       if (!isMounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
