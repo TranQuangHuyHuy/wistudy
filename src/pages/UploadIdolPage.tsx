@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, UserX, User, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, ArrowLeft, UserX, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -54,9 +54,7 @@ export default function UploadIdolPage() {
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
-        <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
-          <Settings className="w-5 h-5 text-muted-foreground" />
-        </Link>
+        <div className="w-10" />
       </header>
 
       {/* Main Content */}
