@@ -86,14 +86,12 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
-        <div className="max-w-md mx-auto">
-          <Button asChild size="lg" className="w-full shadow-soft">
-            <Link to={isLoggedIn ? "/upload-idol" : "/login"}>
-              {isLoggedIn ? "Tiếp tục học" : "Bắt đầu ngay"}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
+        <Button asChild size="lg" className="w-full shadow-soft">
+          <Link to={isLoggedIn ? "/upload-idol" : "/login"}>
+            {isLoggedIn ? "Tiếp tục học" : "Bắt đầu ngay"}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
+        </Button>
       </footer>
     </div>
   );
