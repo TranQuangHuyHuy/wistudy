@@ -23,19 +23,41 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        navigate('/upload-idol');
+    const handleAuthCallback = async () => {
+      // Check for OAuth callback tokens in URL hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      
+      if (accessToken) {
+        // Clear the hash from URL
+        window.history.replaceState(null, '', window.location.pathname);
+        
+        // Wait for session to be established
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          navigate('/upload-idol', { replace: true });
+          return;
+        }
       }
-    });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+      // Set up auth state listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          navigate('/upload-idol', { replace: true });
+        }
+      });
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        navigate('/upload-idol');
+        navigate('/upload-idol', { replace: true });
+        return;
       }
-    });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    };
+
+    handleAuthCallback();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -73,7 +95,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/login`
         }
       });
       if (error) {
