@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
 
-// Force redeploy v8
+// Force redeploy v9
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -24,41 +24,105 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const redirectToHome = useCallback(() => {
+    // Clear hash from URL before navigating
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    navigate('/upload-idol', { replace: true });
+  }, [navigate]);
+
   useEffect(() => {
     let isMounted = true;
-    
-    // Set up auth state listener for future auth changes
+    let pollCount = 0;
+    const maxPolls = 10;
+    let pollInterval: NodeJS.Timeout | null = null;
+
+    console.log('[LoginPage] Initializing auth check...');
+    console.log('[LoginPage] URL hash present:', !!window.location.hash);
+
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!isMounted) return;
+      console.log('[LoginPage] Auth state changed:', event, !!session?.user);
       
+      if (!isMounted) return;
+
       if (session?.user) {
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
-        navigate('/upload-idol', { replace: true });
+        console.log('[LoginPage] User found in auth state change, redirecting...');
+        if (pollInterval) clearInterval(pollInterval);
+        redirectToHome();
       }
     });
 
-    // ALWAYS check current session immediately
-    // Supabase client already processed hash tokens when page loaded
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      
-      if (session?.user) {
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
+    // Function to check session
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('[LoginPage] Session check result:', !!session?.user, error?.message);
+        
+        if (!isMounted) return false;
+
+        if (session?.user) {
+          console.log('[LoginPage] Session found, redirecting...');
+          return true;
         }
-        navigate('/upload-idol', { replace: true });
-      } else {
-        setIsCheckingAuth(false);
+        return false;
+      } catch (err) {
+        console.error('[LoginPage] Error checking session:', err);
+        return false;
       }
-    });
+    };
+
+    // If hash tokens are present, poll for session (Supabase needs time to process)
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      console.log('[LoginPage] Hash tokens detected, starting polling...');
+      
+      // Immediate check first
+      checkSession().then((found) => {
+        if (found && isMounted) {
+          redirectToHome();
+          return;
+        }
+
+        // Start polling if not found immediately
+        if (isMounted) {
+          pollInterval = setInterval(async () => {
+            pollCount++;
+            console.log('[LoginPage] Poll attempt:', pollCount);
+            
+            const found = await checkSession();
+            if (found && isMounted) {
+              if (pollInterval) clearInterval(pollInterval);
+              redirectToHome();
+              return;
+            }
+
+            if (pollCount >= maxPolls) {
+              console.log('[LoginPage] Max polls reached, showing login form');
+              if (pollInterval) clearInterval(pollInterval);
+              if (isMounted) setIsCheckingAuth(false);
+            }
+          }, 500);
+        }
+      });
+    } else {
+      // No hash tokens - just check existing session once
+      checkSession().then((found) => {
+        if (!isMounted) return;
+        if (found) {
+          redirectToHome();
+        } else {
+          setIsCheckingAuth(false);
+        }
+      });
+    }
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, [navigate]);
+  }, [navigate, redirectToHome]);
 
   if (isCheckingAuth) {
     return (
