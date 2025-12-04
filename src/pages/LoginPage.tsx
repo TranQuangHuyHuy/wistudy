@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { BookOpen, Loader2 } from 'lucide-react';
+import { BookOpen, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ const loginSchema = z.object({
   email: z.string().trim().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,6 @@ export default function LoginPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
 
   useEffect(() => {
     let isMounted = true;
@@ -132,15 +132,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
-      <header className="p-6 flex items-center justify-between">
+      {/* Header */}
+      <header className="flex items-center justify-between p-6">
+        <button onClick={() => navigate('/')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        </button>
         <Logo size="sm" />
         <ThemeToggle />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <div className="w-full max-w-sm space-y-8 page-transition">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-6 page-transition">
+        <div className="w-full max-w-md mx-auto space-y-6">
           {/* Hero */}
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-3">
             <div className="inline-flex p-4 bg-gradient-to-br from-accent-blue to-accent-pink rounded-2xl mb-2 group cursor-default shadow-soft">
               <BookOpen className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
@@ -184,7 +189,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
