@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Upload, Type, Images, Video } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, Type, Images } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -13,10 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function ChooseBackgroundPage() {
   const navigate = useNavigate();
-  const { userData, setSelectedBackground, setBackgroundVideo } = useWiStudy();
+  const { userData, setSelectedBackground } = useWiStudy();
   const [selected, setSelected] = useState<string | null>(userData.selectedBackground);
   const [customBackground, setCustomBackground] = useState<string | null>(null);
-  const [customVideo, setCustomVideo] = useState<string | null>(userData.backgroundVideo);
   const [textPrompt, setTextPrompt] = useState<string>('');
   const [showTextInput, setShowTextInput] = useState(false);
   const [userName, setUserName] = useState<string>('bạn');
@@ -47,24 +46,7 @@ export default function ChooseBackgroundPage() {
       reader.onloadend = () => {
         const result = reader.result as string;
         setCustomBackground(result);
-        setCustomVideo(null);
         setSelected('custom');
-        setShowTextInput(false);
-        setTextPrompt('');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setCustomVideo(result);
-        setCustomBackground(null);
-        setSelected('video');
         setShowTextInput(false);
         setTextPrompt('');
       };
@@ -89,12 +71,10 @@ export default function ChooseBackgroundPage() {
     setShowTextInput(false);
     setTextPrompt('');
     setCustomBackground(null);
-    setCustomVideo(null);
   };
 
   const handleLibrarySelect = (imageUrl: string) => {
     setCustomBackground(imageUrl);
-    setCustomVideo(null);
     setSelected('library-image');
     setShowTextInput(false);
     setTextPrompt('');
@@ -103,23 +83,14 @@ export default function ChooseBackgroundPage() {
   const handleContinue = () => {
     if (!selected) return;
     
-    if (selected === 'video' && customVideo) {
-      setBackgroundVideo(customVideo);
-      setSelectedBackground(null);
-      navigate('/choose-music');
-    } else if (selected === 'text-prompt' && textPrompt.trim()) {
-      setBackgroundVideo(null);
+    if (selected === 'text-prompt' && textPrompt.trim()) {
       setSelectedBackground(`text:${textPrompt.trim()}`);
-      navigate('/generate');
     } else if (selected === 'custom' || selected === 'library-image') {
-      setBackgroundVideo(null);
       setSelectedBackground(customBackground);
-      navigate('/generate');
     } else {
-      setBackgroundVideo(null);
       setSelectedBackground(selected);
-      navigate('/generate');
     }
+    navigate('/generate');
   };
 
   const isValid = selected && (selected !== 'text-prompt' || textPrompt.trim().length > 0);
@@ -166,8 +137,8 @@ export default function ChooseBackgroundPage() {
             ))}
           </div>
 
-          {/* Options Row: Image Library, Upload, Video & Text Prompt */}
-          <div className="grid grid-cols-4 gap-3">
+          {/* Options Row: Image Library, Upload & Text Prompt */}
+          <div className="grid grid-cols-3 gap-3">
             {/* Image Library */}
             <button
               onClick={() => setShowLibrary(true)}
@@ -187,8 +158,8 @@ export default function ChooseBackgroundPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
-                  <Images className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-medium">Thư viện</span>
+                  <Images className="w-6 h-6 mb-1.5" />
+                  <span className="text-xs font-medium">Thư viện ảnh</span>
                 </div>
               )}
             </button>
@@ -199,18 +170,18 @@ export default function ChooseBackgroundPage() {
               border-2 ${selected === 'custom' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
               flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
             `}>
-              {selected === 'custom' && customBackground ? (
+              {customBackground ? (
                 <>
                   <img src={customBackground} alt="Custom" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                  <p className="absolute bottom-2 left-2 text-primary-foreground text-xs font-medium">
-                    Ảnh
+                  <p className="absolute bottom-3 left-3 text-primary-foreground text-sm font-medium">
+                    Tùy chỉnh
                   </p>
                 </>
               ) : (
                 <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
-                  <Upload className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-medium">Tải ảnh</span>
+                  <Upload className="w-6 h-6 mb-1.5" />
+                  <span className="text-xs font-medium">Tải lên</span>
                 </div>
               )}
               <input
@@ -218,34 +189,6 @@ export default function ChooseBackgroundPage() {
                 className="hidden"
                 accept="image/*"
                 onChange={handleCustomUpload}
-              />
-            </label>
-
-            {/* Video Upload */}
-            <label className={`
-              relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video cursor-pointer
-              border-2 ${selected === 'video' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
-              flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
-            `}>
-              {selected === 'video' && customVideo ? (
-                <>
-                  <video src={customVideo} className="absolute inset-0 w-full h-full object-cover" muted />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                  <p className="absolute bottom-2 left-2 text-primary-foreground text-xs font-medium">
-                    Video
-                  </p>
-                </>
-              ) : (
-                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
-                  <Video className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-medium">Tải video</span>
-                </div>
-              )}
-              <input
-                type="file"
-                className="hidden"
-                accept="video/*"
-                onChange={handleVideoUpload}
               />
             </label>
 
@@ -259,8 +202,8 @@ export default function ChooseBackgroundPage() {
               `}
             >
               <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
-                <Type className="w-5 h-5 mb-1" />
-                <span className="text-[10px] font-medium">Mô tả</span>
+                <Type className="w-6 h-6 mb-1.5" />
+                <span className="text-xs font-medium">Mô tả</span>
               </div>
             </button>
           </div>
@@ -293,7 +236,7 @@ export default function ChooseBackgroundPage() {
           onClick={handleContinue}
           disabled={!isValid}
         >
-          {selected === 'video' ? 'Tiếp tục' : 'Tạo ảnh'}
+          Tạo ảnh
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </footer>

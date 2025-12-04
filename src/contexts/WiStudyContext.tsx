@@ -8,7 +8,6 @@ interface WiStudyContextType {
   setIdolImage: (image: string | null) => void;
   setUserImage: (image: string | null) => void;
   setSelectedBackground: (background: string | null) => void;
-  setBackgroundVideo: (video: string | null) => void;
   setGeneratedImage: (image: string | null) => void;
   setPomodoroSettings: (settings: PomodoroSettings) => void;
   setSelectedMusic: (music: MusicSelection | null) => void;
@@ -25,7 +24,6 @@ const defaultUserData: UserData = {
   idolImage: null,
   userImage: null,
   selectedBackground: null,
-  backgroundVideo: null,
   generatedImage: null,
   pomodoroSettings: defaultPomodoroSettings,
   selectedMusic: null
@@ -47,10 +45,6 @@ export function WiStudyProvider({ children }: { children: ReactNode }) {
 
   const setSelectedBackground = (background: string | null) => {
     setUserData(prev => ({ ...prev, selectedBackground: background }));
-  };
-
-  const setBackgroundVideo = (video: string | null) => {
-    setUserData(prev => ({ ...prev, backgroundVideo: video }));
   };
 
   const setGeneratedImage = (image: string | null) => {
@@ -79,7 +73,6 @@ export function WiStudyProvider({ children }: { children: ReactNode }) {
         setIdolImage,
         setUserImage,
         setSelectedBackground,
-        setBackgroundVideo,
         setGeneratedImage,
         setPomodoroSettings,
         setSelectedMusic,

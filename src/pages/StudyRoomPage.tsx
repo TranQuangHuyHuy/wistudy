@@ -90,20 +90,11 @@ export default function StudyRoomPage() {
       className="min-h-screen bg-background relative"
       onMouseMove={handleMouseMove}
     >
-      {/* Main Content - Full screen image/video with overlays */}
+      {/* Main Content - Full screen image with overlays */}
       <main className="absolute inset-0 animate-fade-in">
-        {/* Full screen background */}
+        {/* Full screen image */}
         <div className="absolute inset-0">
-          {userData.backgroundVideo ? (
-            <video
-              src={userData.backgroundVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : userData.generatedImage ? (
+          {userData.generatedImage ? (
             <img
               src={userData.generatedImage}
               alt="Study companion"
