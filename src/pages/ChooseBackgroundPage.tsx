@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { BackgroundCard } from '@/components/wistudy/BackgroundCard';
+import { ImageLibraryDialog } from '@/components/wistudy/ImageLibraryDialog';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ export default function ChooseBackgroundPage() {
   const [textPrompt, setTextPrompt] = useState<string>('');
   const [showTextInput, setShowTextInput] = useState(false);
   const [userName, setUserName] = useState<string>('bạn');
+  const [showLibrary, setShowLibrary] = useState(false);
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -71,12 +73,19 @@ export default function ChooseBackgroundPage() {
     setCustomBackground(null);
   };
 
+  const handleLibrarySelect = (imageUrl: string) => {
+    setCustomBackground(imageUrl);
+    setSelected('library-image');
+    setShowTextInput(false);
+    setTextPrompt('');
+  };
+
   const handleContinue = () => {
     if (!selected) return;
     
     if (selected === 'text-prompt' && textPrompt.trim()) {
       setSelectedBackground(`text:${textPrompt.trim()}`);
-    } else if (selected === 'custom') {
+    } else if (selected === 'custom' || selected === 'library-image') {
       setSelectedBackground(customBackground);
     } else {
       setSelectedBackground(selected);
@@ -132,17 +141,27 @@ export default function ChooseBackgroundPage() {
           <div className="grid grid-cols-3 gap-3">
             {/* Image Library */}
             <button
-              onClick={() => {/* TODO: Open image library */}}
+              onClick={() => setShowLibrary(true)}
               className={`
                 relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video
-                border-2 border-dashed border-border hover:border-primary/50 hover:shadow-card
+                border-2 ${selected === 'library-image' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
                 flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
               `}
             >
-              <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
-                <Images className="w-6 h-6 mb-1.5" />
-                <span className="text-xs font-medium">Thư viện ảnh</span>
-              </div>
+              {selected === 'library-image' && customBackground ? (
+                <>
+                  <img src={customBackground} alt="Library" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                  <p className="absolute bottom-2 left-2 text-primary-foreground text-xs font-medium">
+                    Thư viện
+                  </p>
+                </>
+              ) : (
+                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                  <Images className="w-6 h-6 mb-1.5" />
+                  <span className="text-xs font-medium">Thư viện ảnh</span>
+                </div>
+              )}
             </button>
 
             {/* Custom Upload */}
@@ -221,6 +240,13 @@ export default function ChooseBackgroundPage() {
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </footer>
+
+      {/* Image Library Dialog */}
+      <ImageLibraryDialog
+        open={showLibrary}
+        onOpenChange={setShowLibrary}
+        onSelect={handleLibrarySelect}
+      />
     </div>
   );
 }
