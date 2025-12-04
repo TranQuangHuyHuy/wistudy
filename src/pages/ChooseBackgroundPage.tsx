@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Upload, Type } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, Type, Images } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
 import { BackgroundCard } from '@/components/wistudy/BackgroundCard';
 import { useWiStudy } from '@/contexts/WiStudyContext';
 import { backgrounds } from '@/data/backgrounds';
+import { galleryImages } from '@/data/galleryImages';
 import { supabase } from '@/integrations/supabase/client';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -78,6 +79,12 @@ export default function ChooseBackgroundPage() {
       setSelectedBackground(`text:${textPrompt.trim()}`);
     } else if (selected === 'custom') {
       setSelectedBackground(customBackground);
+    } else if (selected.startsWith('gallery:')) {
+      const galleryId = selected.replace('gallery:', '');
+      const galleryImg = galleryImages.find(img => img.id === galleryId);
+      if (galleryImg) {
+        setSelectedBackground(`gallery:${galleryImg.src}`);
+      }
     } else {
       setSelectedBackground(selected);
     }
@@ -127,6 +134,35 @@ export default function ChooseBackgroundPage() {
               />
             ))}
           </div>
+
+          {/* Gallery Section */}
+          {galleryImages.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Images className="w-4 h-4" />
+                <span className="text-sm font-medium">Thư viện ảnh</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {galleryImages.map((img) => (
+                  <button
+                    key={img.id}
+                    onClick={() => handlePresetSelect(`gallery:${img.id}`)}
+                    className={`
+                      relative rounded-xl overflow-hidden aspect-video transition-all duration-300
+                      border-2 ${selected === `gallery:${img.id}` ? 'border-primary shadow-elevated ring-2 ring-primary/20' : 'border-transparent hover:border-primary/50'}
+                    `}
+                  >
+                    <img 
+                      src={img.src} 
+                      alt={img.name} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Upload & Text Prompt Row */}
           <div className="grid grid-cols-2 gap-3">
