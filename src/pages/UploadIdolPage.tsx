@@ -145,7 +145,7 @@ export default function UploadIdolPage() {
           onClick={handleContinue}
           disabled={!isAnonymous && !localIdolImage}
         >
-          Tiếp tục
+          Chọn background
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </footer>
