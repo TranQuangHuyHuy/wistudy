@@ -2,3 +2,6 @@ project_id = "lhwgzhmgysbjtmckbdgo"
 
 [functions.generate-study-image]
 verify_jwt = false
+
+[functions.email-hook]
+verify_jwt = false
