@@ -46,14 +46,11 @@ export default function LandingPage() {
       <header className="flex items-center justify-between p-6">
         <Logo size="sm" />
         {isLoggedIn ? (
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
-            <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
-              <Settings className="w-5 h-5 text-muted-foreground" />
-            </Link>
-          </div>
+          <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+            <Settings className="w-5 h-5 text-muted-foreground" />
+          </Link>
         ) : (
-          <div className="w-10" />
+          <ThemeToggle />
         )}
       </header>
 
