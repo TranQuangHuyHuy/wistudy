@@ -17,10 +17,8 @@ export default function GeneratePage() {
   const [userName, setUserName] = useState<string>('bạn');
 
   const isTextPrompt = userData.selectedBackground?.startsWith('text:');
-  const isGalleryImage = userData.selectedBackground?.startsWith('gallery:');
   const textPromptValue = isTextPrompt ? userData.selectedBackground?.substring(5) : null;
-  const galleryImageSrc = isGalleryImage ? userData.selectedBackground?.substring(8) : null;
-  const selectedBg = !isTextPrompt && !isGalleryImage ? backgrounds.find(b => b.id === userData.selectedBackground) : null;
+  const selectedBg = !isTextPrompt ? backgrounds.find(b => b.id === userData.selectedBackground) : null;
   const customBackground = userData.selectedBackground?.startsWith('data:') ? userData.selectedBackground : null;
 
   useEffect(() => {
@@ -85,18 +83,12 @@ export default function GeneratePage() {
   };
 
   useEffect(() => {
-    // Nếu là ảnh từ thư viện, dùng trực tiếp không cần AI
-    if (isGalleryImage && galleryImageSrc) {
-      setGeneratedPreview(galleryImageSrc);
-      return;
-    }
-    
     // Chỉ tự động gen 1 lần khi chưa có ảnh
     if (!generatedPreview && userData.idolImage && !hasGeneratedRef.current) {
       hasGeneratedRef.current = true;
       generateImage();
     }
-  }, [isGalleryImage, galleryImageSrc]);
+  }, []);
 
   const handleRegenerate = () => {
     generateImage();
@@ -135,7 +127,7 @@ export default function GeneratePage() {
               Ảnh học tập
             </h1>
             <p className="text-muted-foreground text-sm">
-              {selectedBg ? `Background: ${selectedBg.nameVi}` : isTextPrompt ? 'Background từ mô tả' : isGalleryImage ? 'Background từ thư viện' : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
+              {selectedBg ? `Background: ${selectedBg.nameVi}` : isTextPrompt ? 'Background từ mô tả' : customBackground ? 'Background tùy chỉnh' : 'Đang tạo ảnh...'}
             </p>
           </div>
 
@@ -170,8 +162,8 @@ export default function GeneratePage() {
             )}
           </div>
 
-          {/* Regenerate Button - Only show for AI-generated images */}
-          {!isGenerating && generatedPreview && !isGalleryImage && (
+          {/* Regenerate Button */}
+          {!isGenerating && generatedPreview && (
             <Button
               variant="secondary"
               className="w-full shadow-soft"
@@ -182,14 +174,12 @@ export default function GeneratePage() {
             </Button>
           )}
 
-          {/* Info Card - Only show for AI-generated images */}
-          {!isGalleryImage && (
-            <div className="p-4 bg-gradient-to-r from-accent-blue/40 to-accent-pink/30 rounded-2xl border border-primary/20">
-              <p className="text-sm text-foreground leading-relaxed">
-                💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại nhiều lần.
-              </p>
-            </div>
-          )}
+          {/* Info Card */}
+          <div className="p-4 bg-gradient-to-r from-accent-blue/40 to-accent-pink/30 rounded-2xl border border-primary/20">
+            <p className="text-sm text-foreground leading-relaxed">
+              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại nhiều lần.
+            </p>
+          </div>
         </div>
       </main>
 
