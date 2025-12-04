@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Upload, Type } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, Type, Images } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -128,8 +128,23 @@ export default function ChooseBackgroundPage() {
             ))}
           </div>
 
-          {/* Upload & Text Prompt Row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Options Row: Image Library, Upload & Text Prompt */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Image Library */}
+            <button
+              onClick={() => {/* TODO: Open image library */}}
+              className={`
+                relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video
+                border-2 border-dashed border-border hover:border-primary/50 hover:shadow-card
+                flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
+              `}
+            >
+              <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                <Images className="w-6 h-6 mb-1.5" />
+                <span className="text-xs font-medium">Thư viện ảnh</span>
+              </div>
+            </button>
+
             {/* Custom Upload */}
             <label className={`
               relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video cursor-pointer
