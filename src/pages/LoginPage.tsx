@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +14,6 @@ const loginSchema = z.object({
   email: z.string().trim().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
-
-// Force redeploy v10
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -24,106 +22,84 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const redirectToHome = useCallback(() => {
-    // Clear hash from URL before navigating
-    if (window.location.hash) {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-    // Use window.location for more reliable redirect in production
-    window.location.href = '/upload-idol';
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
-    let pollCount = 0;
-    const maxPolls = 10;
-    let pollInterval: NodeJS.Timeout | null = null;
 
-    console.log('[LoginPage] Initializing auth check...');
-    console.log('[LoginPage] URL hash present:', !!window.location.hash);
+    const handleAuth = async () => {
+      console.log('[LoginPage] Starting auth handling...');
+      console.log('[LoginPage] Current hash:', window.location.hash);
 
-    // Set up auth state listener FIRST
+      // Check if hash contains OAuth tokens
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        console.log('[LoginPage] OAuth tokens detected in hash, parsing...');
+        
+        try {
+          // Parse hash parameters manually
+          const params = new URLSearchParams(hash.substring(1));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          
+          console.log('[LoginPage] Tokens parsed:', !!accessToken, !!refreshToken);
+
+          if (accessToken && refreshToken) {
+            // Set session manually with extracted tokens
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            console.log('[LoginPage] setSession result:', !!data?.session, error?.message);
+
+            if (data?.session && isMounted) {
+              // Clear hash and redirect
+              window.history.replaceState(null, '', window.location.pathname);
+              window.location.href = '/upload-idol';
+              return;
+            }
+
+            if (error) {
+              console.error('[LoginPage] setSession error:', error);
+            }
+          }
+        } catch (err) {
+          console.error('[LoginPage] Error parsing OAuth tokens:', err);
+        }
+      }
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[LoginPage] Existing session check:', !!session?.user);
+      
+      if (session?.user && isMounted) {
+        window.location.href = '/upload-idol';
+        return;
+      }
+
+      if (isMounted) {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[LoginPage] Auth state changed:', event, !!session?.user);
       
       if (!isMounted) return;
 
-      if (session?.user) {
-        console.log('[LoginPage] User found in auth state change, redirecting...');
-        if (pollInterval) clearInterval(pollInterval);
-        redirectToHome();
+      if (event === 'SIGNED_IN' && session?.user) {
+        window.location.href = '/upload-idol';
       }
     });
 
-    // Function to check session
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('[LoginPage] Session check result:', !!session?.user, error?.message);
-        
-        if (!isMounted) return false;
-
-        if (session?.user) {
-          console.log('[LoginPage] Session found, redirecting...');
-          return true;
-        }
-        return false;
-      } catch (err) {
-        console.error('[LoginPage] Error checking session:', err);
-        return false;
-      }
-    };
-
-    // If hash tokens are present, poll for session (Supabase needs time to process)
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-      console.log('[LoginPage] Hash tokens detected, starting polling...');
-      
-      // Immediate check first
-      checkSession().then((found) => {
-        if (found && isMounted) {
-          redirectToHome();
-          return;
-        }
-
-        // Start polling if not found immediately
-        if (isMounted) {
-          pollInterval = setInterval(async () => {
-            pollCount++;
-            console.log('[LoginPage] Poll attempt:', pollCount);
-            
-            const found = await checkSession();
-            if (found && isMounted) {
-              if (pollInterval) clearInterval(pollInterval);
-              redirectToHome();
-              return;
-            }
-
-            if (pollCount >= maxPolls) {
-              console.log('[LoginPage] Max polls reached, showing login form');
-              if (pollInterval) clearInterval(pollInterval);
-              if (isMounted) setIsCheckingAuth(false);
-            }
-          }, 500);
-        }
-      });
-    } else {
-      // No hash tokens - just check existing session once
-      checkSession().then((found) => {
-        if (!isMounted) return;
-        if (found) {
-          redirectToHome();
-        } else {
-          setIsCheckingAuth(false);
-        }
-      });
-    }
+    handleAuth();
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
-      if (pollInterval) clearInterval(pollInterval);
     };
-  }, [redirectToHome]);
+  }, []);
 
   if (isCheckingAuth) {
     return (
