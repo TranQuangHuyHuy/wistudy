@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WiStudyProvider } from "@/contexts/WiStudyContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -32,17 +33,21 @@ function App() {
               <Sonner />
               <BrowserRouter>
                 <Routes>
+                  {/* Public routes */}
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/email-confirmation" element={<EmailConfirmationPage />} />
-                  <Route path="/upload-idol" element={<UploadIdolPage />} />
-                  <Route path="/choose-background" element={<ChooseBackgroundPage />} />
-                  <Route path="/generate" element={<GeneratePage />} />
-                  <Route path="/choose-music" element={<MusicSelectionPage />} />
-                  <Route path="/pomodoro-setup" element={<PomodoroSetupPage />} />
-                  <Route path="/study-room" element={<StudyRoomPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  
+                  {/* Protected routes */}
+                  <Route path="/upload-idol" element={<ProtectedRoute><UploadIdolPage /></ProtectedRoute>} />
+                  <Route path="/choose-background" element={<ProtectedRoute><ChooseBackgroundPage /></ProtectedRoute>} />
+                  <Route path="/generate" element={<ProtectedRoute><GeneratePage /></ProtectedRoute>} />
+                  <Route path="/choose-music" element={<ProtectedRoute><MusicSelectionPage /></ProtectedRoute>} />
+                  <Route path="/pomodoro-setup" element={<ProtectedRoute><PomodoroSetupPage /></ProtectedRoute>} />
+                  <Route path="/study-room" element={<ProtectedRoute><StudyRoomPage /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
