@@ -317,7 +317,7 @@ export default function PomodoroSetupPage() {
       <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
         <Button
           size="lg"
-          className="w-full shadow-soft"
+          className="w-full md:max-w-sm md:mx-auto shadow-soft"
           onClick={handleStart}
         >
           <Play className="w-4 h-4 mr-2" />

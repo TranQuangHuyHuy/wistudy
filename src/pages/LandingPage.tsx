@@ -86,7 +86,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
-        <Button asChild size="lg" className="w-full shadow-soft">
+        <Button asChild size="lg" className="w-full md:max-w-sm md:mx-auto shadow-soft">
           <Link to={isLoggedIn ? "/upload-idol" : "/login"}>
             {isLoggedIn ? "Tiếp tục học" : "Bắt đầu ngay"}
             <ArrowRight className="w-4 h-4 ml-2" />
