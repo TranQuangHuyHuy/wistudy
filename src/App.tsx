@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import EmailConfirmationPage from "./pages/EmailConfirmationPage";
 import UploadIdolPage from "./pages/UploadIdolPage";
 import SettingsPage from "./pages/SettingsPage";
 import ChooseBackgroundPage from "./pages/ChooseBackgroundPage";
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/email-confirmation" element={<EmailConfirmationPage />} />
                   <Route path="/upload-idol" element={<UploadIdolPage />} />
                   <Route path="/choose-background" element={<ChooseBackgroundPage />} />
                   <Route path="/generate" element={<GeneratePage />} />
