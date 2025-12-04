@@ -43,7 +43,7 @@ export default function LoginPage() {
 
             if (data?.session && isMounted) {
               window.history.replaceState(null, '', window.location.pathname);
-              window.location.href = '/upload-idol';
+              window.location.href = '/';
               return;
             }
           }
@@ -62,7 +62,7 @@ export default function LoginPage() {
       if (!isMounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        window.location.href = '/upload-idol';
+        window.location.href = '/';
       }
     });
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/upload-idol`
+          redirectTo: `${window.location.origin}/`
         }
       });
       if (error) {
