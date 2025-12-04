@@ -24,41 +24,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      // Check for OAuth callback tokens in URL hash
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      
-      if (accessToken) {
-        // Clear the hash from URL
-        window.history.replaceState(null, '', window.location.pathname);
-        
-        // Wait for session to be established
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          navigate('/upload-idol', { replace: true });
-          return;
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Clear hash from URL if present
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
         }
+        navigate('/upload-idol', { replace: true });
       }
+    });
 
-      // Set up auth state listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (session?.user) {
-          navigate('/upload-idol', { replace: true });
-        }
-      });
-
-      // Check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
+    // THEN check for existing session (this also processes OAuth hash tokens)
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         navigate('/upload-idol', { replace: true });
-        return;
       }
+    });
 
-      return () => subscription.unsubscribe();
-    };
-
-    handleAuthCallback();
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
