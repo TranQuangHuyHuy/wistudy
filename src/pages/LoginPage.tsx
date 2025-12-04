@@ -15,7 +15,7 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
 
-// Force redeploy v2
+// Force redeploy v3
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
