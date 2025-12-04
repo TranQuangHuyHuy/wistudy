@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,66 +14,83 @@ const loginSchema = z.object({
   email: z.string().trim().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
+
+// Parse OAuth tokens from URL hash
+const parseHashTokens = () => {
+  const hash = window.location.hash;
+  if (!hash || !hash.includes('access_token')) return null;
+  
+  const params = new URLSearchParams(hash.substring(1));
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  
+  if (accessToken && refreshToken) {
+    return { accessToken, refreshToken };
+  }
+  return null;
+};
+
+// Clean URL by removing hash
+const cleanUrl = () => {
+  window.history.replaceState(null, '', window.location.pathname);
+};
+
+// Redirect to app
+const redirectToApp = () => {
+  window.location.href = '/upload-idol';
+};
+
 export default function LoginPage() {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
   useEffect(() => {
     let isMounted = true;
 
-    const handleAuth = async () => {
-      console.log('[LoginPage] Starting auth handling...');
-      console.log('[LoginPage] Current hash:', window.location.hash);
-
-      // Check if hash contains OAuth tokens
-      const hash = window.location.hash;
-      if (hash && hash.includes('access_token')) {
-        console.log('[LoginPage] OAuth tokens detected in hash, parsing...');
+    const handleOAuthCallback = async () => {
+      // Step 1: Check for OAuth tokens in URL hash
+      const tokens = parseHashTokens();
+      
+      if (tokens) {
+        console.log('[OAuth] Tokens detected, setting session...');
         
         try {
-          // Parse hash parameters manually
-          const params = new URLSearchParams(hash.substring(1));
-          const accessToken = params.get('access_token');
-          const refreshToken = params.get('refresh_token');
-          
-          console.log('[LoginPage] Tokens parsed:', !!accessToken, !!refreshToken);
+          // Step 2: Set session with tokens
+          const { data, error } = await supabase.auth.setSession({
+            access_token: tokens.accessToken,
+            refresh_token: tokens.refreshToken,
+          });
 
-          if (accessToken && refreshToken) {
-            // Set session manually with extracted tokens
-            const { data, error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
+          if (error) {
+            console.error('[OAuth] setSession error:', error);
+            cleanUrl();
+            if (isMounted) setIsCheckingAuth(false);
+            return;
+          }
 
-            console.log('[LoginPage] setSession result:', !!data?.session, error?.message);
-
-            if (data?.session && isMounted) {
-              // Clear hash and redirect
-              window.history.replaceState(null, '', window.location.pathname);
-              window.location.href = '/upload-idol';
-              return;
-            }
-
-            if (error) {
-              console.error('[LoginPage] setSession error:', error);
-            }
+          if (data?.session) {
+            console.log('[OAuth] Session set successfully');
+            // Step 3: Clean URL
+            cleanUrl();
+            // Step 4: Redirect to app
+            redirectToApp();
+            return;
           }
         } catch (err) {
-          console.error('[LoginPage] Error parsing OAuth tokens:', err);
+          console.error('[OAuth] Error:', err);
+          cleanUrl();
         }
       }
 
       // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('[LoginPage] Existing session check:', !!session?.user);
       
-      if (session?.user && isMounted) {
-        window.location.href = '/upload-idol';
+      if (session?.user) {
+        console.log('[Auth] Existing session found, redirecting...');
+        redirectToApp();
         return;
       }
 
@@ -82,18 +99,16 @@ export default function LoginPage() {
       }
     };
 
-    // Set up auth state listener
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[LoginPage] Auth state changed:', event, !!session?.user);
-      
       if (!isMounted) return;
-
+      
       if (event === 'SIGNED_IN' && session?.user) {
-        window.location.href = '/upload-idol';
+        redirectToApp();
       }
     });
 
-    handleAuth();
+    handleOAuthCallback();
 
     return () => {
       isMounted = false;
@@ -144,7 +159,8 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/upload-idol`
+          // Redirect back to login page to process tokens
+          redirectTo: `${window.location.origin}/login`
         }
       });
       if (error) {
