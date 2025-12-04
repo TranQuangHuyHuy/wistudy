@@ -15,35 +15,57 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Mật khẩu tối thiểu 6 ký tự" })
 });
 
-// Force redeploy v4
+// Force redeploy v5
 export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    const checkAuth = async () => {
+      // Check for OAuth hash tokens first
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        // Let Supabase process the hash
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session?.user) {
+          window.history.replaceState(null, '', window.location.pathname);
+          navigate('/upload-idol', { replace: true });
+          return;
+        }
+      }
+
+      // Check existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        navigate('/upload-idol', { replace: true });
+        return;
+      }
+
+      setIsCheckingAuth(false);
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        // Clear hash from URL if present
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
         navigate('/upload-idol', { replace: true });
       }
     });
 
-    // THEN check for existing session (this also processes OAuth hash tokens)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        navigate('/upload-idol', { replace: true });
-      }
-    });
+    checkAuth();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
