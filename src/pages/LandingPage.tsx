@@ -1,11 +1,59 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { BookOpen, Sparkles, Clock, ArrowRight } from 'lucide-react';
+import { BookOpen, Sparkles, Clock, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Handle OAuth callback - check for tokens in URL hash
+    const handleAuthCallback = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      
+      if (accessToken) {
+        // OAuth callback detected, wait for session to be established
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          navigate('/upload-idol', { replace: true });
+          return;
+        }
+      }
+
+      // Set up auth state listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+          navigate('/upload-idol', { replace: true });
+        }
+      });
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        navigate('/upload-idol', { replace: true });
+        return;
+      }
+
+      setIsLoading(false);
+      return () => subscription.unsubscribe();
+    };
+
+    handleAuthCallback();
+  }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col">
       <header className="p-6 flex items-center justify-between">
