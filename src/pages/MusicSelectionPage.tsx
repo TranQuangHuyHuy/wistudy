@@ -20,23 +20,35 @@ export default function MusicSelectionPage() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<MusicPlaylist | null>(null);
   const [customUrl, setCustomUrl] = useState('');
   const [lastName, setLastName] = useState('bạn');
+  const [tier, setTier] = useState<string>('free');
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data } = await supabase
+        // Fetch name
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
           .single();
-        if (data?.full_name) {
-          const nameParts = data.full_name.split(' ');
+        if (profileData?.full_name) {
+          const nameParts = profileData.full_name.split(' ');
           setLastName(nameParts[nameParts.length - 1]);
+        }
+        
+        // Fetch tier
+        const { data: subData } = await supabase
+          .from('user_subscriptions')
+          .select('tier')
+          .eq('user_id', user.id)
+          .single();
+        if (subData?.tier) {
+          setTier(subData.tier);
         }
       }
     };
-    fetchUserName();
+    fetchUserData();
   }, []);
 
   const filteredPlaylists = musicPlaylists.filter(p => p.category === selectedCategory);
@@ -110,7 +122,7 @@ export default function MusicSelectionPage() {
     <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+        <button onClick={() => navigate(tier === 'free' ? '/' : '/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
