@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WiStudyProvider } from "@/contexts/WiStudyContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -18,6 +19,7 @@ import GeneratePage from "./pages/GeneratePage";
 import MusicSelectionPage from "./pages/MusicSelectionPage";
 import PomodoroSetupPage from "./pages/PomodoroSetupPage";
 import StudyRoomPage from "./pages/StudyRoomPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,9 @@ function App() {
                   <Route path="/pomodoro-setup" element={<ProtectedRoute><PomodoroSetupPage /></ProtectedRoute>} />
                   <Route path="/study-room" element={<ProtectedRoute><StudyRoomPage /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                  
+                  {/* Admin routes */}
+                  <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
