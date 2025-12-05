@@ -15,6 +15,8 @@ export default function GeneratePage() {
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(userData.generatedImage);
   const hasGeneratedRef = useRef(false);
   const [userName, setUserName] = useState<string>('bạn');
+  const [regenerateCount, setRegenerateCount] = useState(0);
+  const maxRegenerations = 2;
 
   const isTextPrompt = userData.selectedBackground?.startsWith('text:');
   const textPromptValue = isTextPrompt ? userData.selectedBackground?.substring(5) : null;
@@ -91,8 +93,13 @@ export default function GeneratePage() {
   }, []);
 
   const handleRegenerate = () => {
-    generateImage();
+    if (regenerateCount < maxRegenerations) {
+      setRegenerateCount(prev => prev + 1);
+      generateImage();
+    }
   };
+
+  const remainingRegenerations = maxRegenerations - regenerateCount;
 
   const handleContinue = () => {
     if (!generatedPreview) {
@@ -168,16 +175,19 @@ export default function GeneratePage() {
               variant="secondary"
               className="w-full shadow-soft"
               onClick={handleRegenerate}
+              disabled={remainingRegenerations <= 0}
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Tạo lại ảnh khác
+              {remainingRegenerations > 0 
+                ? `Tạo lại ảnh khác (còn ${remainingRegenerations} lần)`
+                : 'Đã hết lượt tạo lại'}
             </Button>
           )}
 
           {/* Info Card */}
           <div className="p-4 bg-gradient-to-r from-accent-blue/40 to-accent-pink/30 rounded-2xl border border-primary/20">
             <p className="text-sm text-foreground leading-relaxed">
-              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại nhiều lần.
+              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Nếu không hài lòng, {userName} có thể tạo lại tối đa 2 lần.
             </p>
           </div>
         </div>
