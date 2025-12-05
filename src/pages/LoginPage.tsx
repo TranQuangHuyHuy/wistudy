@@ -62,7 +62,7 @@ export default function LoginPage() {
       if (!isMounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        navigate('/');
+        window.location.href = '/';
       }
     });
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
@@ -103,13 +103,10 @@ export default function LoginPage() {
         } else {
           toast.error('Đăng nhập thất bại: ' + error.message);
         }
-        setIsLoading(false);
-      } else if (data?.session) {
-        // Redirect after successful login
-        navigate('/');
       }
     } catch (err) {
       toast.error('Có lỗi xảy ra');
+    } finally {
       setIsLoading(false);
     }
   };
