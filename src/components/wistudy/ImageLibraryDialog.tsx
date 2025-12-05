@@ -20,6 +20,7 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect }: ImageLibrar
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
@@ -48,6 +49,22 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect }: ImageLibrar
   useEffect(() => {
     if (open) {
       fetchImages();
+      
+      // Check admin role
+      const checkAdminRole = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsAdmin(false);
+          return;
+        }
+        
+        const { data } = await supabase.rpc('has_role', { 
+          _user_id: user.id, 
+          _role: 'admin' 
+        });
+        setIsAdmin(data === true);
+      };
+      checkAdminRole();
     }
   }, [open, fetchImages]);
 
@@ -137,41 +154,43 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect }: ImageLibrar
           <DialogTitle>Thư viện ảnh</DialogTitle>
         </DialogHeader>
         
-        {/* Drop zone */}
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-            isDragging 
-              ? 'border-primary bg-primary/5' 
-              : 'border-border hover:border-primary/50'
-          }`}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileInput}
-            className="hidden"
-            id="image-upload"
-          />
-          <label htmlFor="image-upload" className="cursor-pointer">
-            {uploading ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Đang tải lên...</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="w-8 h-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Kéo thả ảnh vào đây hoặc click để chọn
-                </p>
-              </div>
-            )}
-          </label>
-        </div>
+        {/* Drop zone - only visible to admin */}
+        {isAdmin && (
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+              isDragging 
+                ? 'border-primary bg-primary/5' 
+                : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileInput}
+              className="hidden"
+              id="image-upload"
+            />
+            <label htmlFor="image-upload" className="cursor-pointer">
+              {uploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <p className="text-sm text-muted-foreground">Đang tải lên...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Kéo thả ảnh vào đây hoặc click để chọn
+                  </p>
+                </div>
+              )}
+            </label>
+          </div>
+        )}
 
         {/* Images grid */}
         {loading ? (
@@ -197,14 +216,17 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect }: ImageLibrar
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => handleDelete(image.name, e)}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
+                {/* Delete button - only visible to admin */}
+                {isAdmin && (
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => handleDelete(image.name, e)}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                )}
               </button>
             ))}
           </div>
