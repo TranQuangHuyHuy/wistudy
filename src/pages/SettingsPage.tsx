@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/wistudy/Logo';
-import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette, Shield } from 'lucide-react';
+import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette, Shield, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThemeSync } from '@/hooks/useThemeSync';
@@ -16,6 +16,8 @@ interface Profile {
   created_at: string;
 }
 
+type SubscriptionTier = 'free' | 'pro';
+
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { theme, setTheme } = useThemeSync();
@@ -25,11 +27,31 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [tier, setTier] = useState<SubscriptionTier>('free');
 
   useEffect(() => {
     fetchProfile();
     checkAdminRole();
+    fetchTier();
   }, []);
+
+  const fetchTier = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('user_subscriptions')
+          .select('tier')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data?.tier) {
+          setTier(data.tier as SubscriptionTier);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching tier:', error);
+    }
+  };
 
   const checkAdminRole = async () => {
     try {
@@ -255,6 +277,46 @@ export default function SettingsPage() {
                   </div>
                   <span className="text-sm font-medium">Tối</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Subscription Tier */}
+            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  tier === 'pro' 
+                    ? 'bg-gradient-to-br from-amber-500 to-amber-600' 
+                    : 'bg-emerald-500/20'
+                }`}>
+                  <Crown className={`w-5 h-5 ${tier === 'pro' ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                </div>
+                <h2 className="font-semibold">Gói đăng ký</h2>
+              </div>
+              
+              <div className={`p-4 rounded-xl border-2 ${
+                tier === 'pro'
+                  ? 'bg-gradient-to-r from-amber-500/10 to-amber-600/10 border-amber-500/30'
+                  : 'bg-emerald-500/5 border-emerald-500/20'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className={`text-lg font-bold ${
+                      tier === 'pro' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      {tier === 'pro' ? 'PRO ✨' : 'FREE'}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {tier === 'pro' ? 'Truy cập đầy đủ tính năng' : 'Gói miễn phí cơ bản'}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                    tier === 'pro'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border-amber-400'
+                      : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  }`}>
+                    {tier.toUpperCase()}
+                  </span>
+                </div>
               </div>
             </div>
 
