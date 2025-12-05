@@ -9,9 +9,6 @@ import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Pale
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThemeSync } from '@/hooks/useThemeSync';
-import { Database } from '@/integrations/supabase/types';
-
-type SubscriptionTier = Database['public']['Enums']['subscription_tier'];
 
 interface Profile {
   id: string;
@@ -25,7 +22,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useThemeSync();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState('');
-  const [tier, setTier] = useState<SubscriptionTier>('free');
+  const [tier, setTier] = useState<'free' | 'pro'>('free');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -70,15 +67,9 @@ export default function SettingsPage() {
       } else if (data) {
         setProfile(data);
         setFullName(data.full_name || '');
+        // Tier is now directly in profiles
+        if (data.tier) setTier(data.tier as 'free' | 'pro');
       }
-
-      // Fetch subscription tier
-      const { data: subData } = await supabase
-        .from('user_subscriptions')
-        .select('tier')
-        .eq('user_id', user.id)
-        .single();
-      if (subData) setTier(subData.tier);
     } catch (err) {
       console.error('Error:', err);
     } finally {

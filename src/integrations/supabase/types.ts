@@ -21,6 +21,7 @@ export type Database = {
           full_name: string | null
           id: string
           theme_preference: string | null
+          tier: string
           updated_at: string
         }
         Insert: {
@@ -29,6 +30,7 @@ export type Database = {
           full_name?: string | null
           id: string
           theme_preference?: string | null
+          tier?: string
           updated_at?: string
         }
         Update: {
@@ -37,34 +39,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           theme_preference?: string | null
+          tier?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      user_subscriptions: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          tier: Database["public"]["Enums"]["subscription_tier"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          tier?: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          tier?: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
