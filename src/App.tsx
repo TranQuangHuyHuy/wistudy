@@ -26,15 +26,14 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <React.StrictMode>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <WiStudyProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WiStudyProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
@@ -60,7 +59,6 @@ function App() {
           </TooltipProvider>
         </QueryClientProvider>
       </ThemeProvider>
-    </React.StrictMode>
   );
 }
 
