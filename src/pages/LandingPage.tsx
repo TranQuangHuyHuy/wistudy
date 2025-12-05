@@ -3,17 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { Badge } from '@/components/ui/badge';
 import { BookOpen, Sparkles, Clock, ArrowRight, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type SubscriptionTier = Database['public']['Enums']['subscription_tier'];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
 
   useEffect(() => {
     // Handle OAuth callback - check for tokens in URL hash
@@ -29,31 +24,11 @@ export default function LandingPage() {
       // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session?.user);
-      
-      if (session?.user) {
-        // Fetch subscription tier
-        const { data } = await supabase
-          .from('user_subscriptions')
-          .select('tier')
-          .eq('user_id', session.user.id)
-          .single();
-        if (data) setTier(data.tier);
-      }
     };
 
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session?.user);
-      if (session?.user) {
-        const { data } = await supabase
-          .from('user_subscriptions')
-          .select('tier')
-          .eq('user_id', session.user.id)
-          .single();
-        if (data) setTier(data.tier);
-      } else {
-        setTier(null);
-      }
     });
 
     handleAuthCallback();
@@ -67,20 +42,9 @@ export default function LandingPage() {
       <header className="flex items-center justify-between p-6">
         <Logo size="sm" />
         {isLoggedIn ? (
-          <div className="flex items-center gap-2">
-            <Badge 
-              className={`text-xs font-bold px-3 py-1.5 border-2 shadow-sm ${
-                tier === 'pro' 
-                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border-amber-300 dark:border-amber-600' 
-                  : 'bg-emerald-500 text-white border-emerald-400 dark:border-emerald-600'
-              }`}
-            >
-              {tier === 'pro' ? '✨ PRO' : 'FREE'}
-            </Badge>
-            <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
-              <Settings className="w-5 h-5 text-muted-foreground" />
-            </Link>
-          </div>
+          <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+            <Settings className="w-5 h-5 text-muted-foreground" />
+          </Link>
         ) : (
           <ThemeToggle />
         )}
