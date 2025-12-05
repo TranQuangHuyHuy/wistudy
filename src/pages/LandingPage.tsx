@@ -6,14 +6,10 @@ import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Sparkles, Clock, ArrowRight, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
-
-type SubscriptionTier = Database['public']['Enums']['subscription_tier'];
-
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
+  const [tier, setTier] = useState<'free' | 'pro' | null>(null);
 
   useEffect(() => {
     // Handle OAuth callback - check for tokens in URL hash
@@ -31,13 +27,13 @@ export default function LandingPage() {
       setIsLoggedIn(!!session?.user);
       
       if (session?.user) {
-        // Fetch subscription tier
+        // Fetch subscription tier from profiles
         const { data } = await supabase
-          .from('user_subscriptions')
+          .from('profiles')
           .select('tier')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .single();
-        if (data) setTier(data.tier);
+        if (data) setTier(data.tier as 'free' | 'pro');
       }
     };
 
@@ -46,11 +42,11 @@ export default function LandingPage() {
       setIsLoggedIn(!!session?.user);
       if (session?.user) {
         const { data } = await supabase
-          .from('user_subscriptions')
+          .from('profiles')
           .select('tier')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .single();
-        if (data) setTier(data.tier);
+        if (data) setTier(data.tier as 'free' | 'pro');
       } else {
         setTier(null);
       }
