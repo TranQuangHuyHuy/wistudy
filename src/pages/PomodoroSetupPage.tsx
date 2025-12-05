@@ -24,11 +24,13 @@ export default function PomodoroSetupPage() {
   const [customBreakTime, setCustomBreakTime] = useState(false);
   const [customRounds, setCustomRounds] = useState(false);
   const [userName, setUserName] = useState<string>('bạn');
+  const [tier, setTier] = useState<string>('free');
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Fetch name
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name')
@@ -38,9 +40,19 @@ export default function PomodoroSetupPage() {
           const nameParts = profile.full_name.trim().split(' ');
           setUserName(nameParts[nameParts.length - 1]);
         }
+        
+        // Fetch tier
+        const { data: subData } = await supabase
+          .from('user_subscriptions')
+          .select('tier')
+          .eq('user_id', user.id)
+          .single();
+        if (subData?.tier) {
+          setTier(subData.tier);
+        }
       }
     };
-    fetchUserName();
+    fetchUserData();
   }, []);
 
   const handleStudyTimeSelect = (time: number) => {
@@ -85,9 +97,9 @@ export default function PomodoroSetupPage() {
       {/* Main Content */}
       <main className="flex-1 px-6 pb-6 overflow-auto page-transition">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Step Indicator */}
+          {/* Step Indicator - dynamic based on tier */}
           <div className="flex justify-center">
-            <StepIndicator currentStep={5} totalSteps={6} />
+            <StepIndicator currentStep={tier === 'free' ? 3 : 5} totalSteps={tier === 'free' ? 4 : 6} />
           </div>
 
           {/* Title */}

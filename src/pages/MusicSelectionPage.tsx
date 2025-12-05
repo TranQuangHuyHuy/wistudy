@@ -122,7 +122,7 @@ export default function MusicSelectionPage() {
     <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate(tier === 'free' ? '/' : '/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+        <button onClick={() => navigate(tier === 'free' ? '/free-background' : '/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -134,7 +134,7 @@ export default function MusicSelectionPage() {
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
           <div className="flex justify-center">
-            <StepIndicator currentStep={4} totalSteps={6} />
+            <StepIndicator currentStep={tier === 'free' ? 2 : 4} totalSteps={tier === 'free' ? 4 : 6} />
           </div>
           
           {/* Title */}
