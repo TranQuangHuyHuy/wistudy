@@ -56,12 +56,29 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect }: ImageLibrar
     onOpenChange(false);
   };
 
+  const sanitizeFileName = (name: string): string => {
+    // Get file extension
+    const ext = name.split('.').pop() || 'jpg';
+    // Remove extension, sanitize, then add back
+    const baseName = name.replace(/\.[^/.]+$/, '');
+    // Replace special chars with underscore, keep only alphanumeric and basic chars
+    const sanitized = baseName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/[^a-zA-Z0-9]/g, '_') // Replace non-alphanumeric with underscore
+      .replace(/_+/g, '_') // Collapse multiple underscores
+      .replace(/^_|_$/g, '') // Remove leading/trailing underscores
+      .substring(0, 50); // Limit length
+    return `${sanitized}.${ext}`;
+  };
+
   const uploadFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
 
     setUploading(true);
     try {
-      const fileName = `${Date.now()}-${file.name}`;
+      const sanitizedName = sanitizeFileName(file.name);
+      const fileName = `${Date.now()}-${sanitizedName}`;
       const { error } = await supabase.storage
         .from('sample-images')
         .upload(fileName, file);
