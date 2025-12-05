@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/wistudy/Logo';
-import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette } from 'lucide-react';
+import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThemeSync } from '@/hooks/useThemeSync';
@@ -24,10 +24,27 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchProfile();
+    checkAdminRole();
   }, []);
+
+  const checkAdminRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.rpc('has_role', { 
+          _user_id: user.id, 
+          _role: 'admin' 
+        });
+        setIsAdmin(data === true);
+      }
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -240,6 +257,24 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+
+            {/* Admin Section - Only visible for admins */}
+            {isAdmin && (
+              <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="font-semibold">Quản trị</h2>
+                </div>
+                <Link to="/admin">
+                  <Button variant="outline" className="w-full">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Trang quản trị Admin
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* Logout */}
             <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50">
