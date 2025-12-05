@@ -6,29 +6,47 @@ import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { BookOpen, Sparkles, Clock, ArrowRight, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
+type SubscriptionTier = 'free' | 'pro';
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [tier, setTier] = useState<SubscriptionTier | null>(null);
+
+  const fetchTier = async (userId: string) => {
+    const { data } = await supabase
+      .from('user_subscriptions')
+      .select('tier')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (data?.tier) {
+      setTier(data.tier as SubscriptionTier);
+    }
+  };
 
   useEffect(() => {
-    // Handle OAuth callback - check for tokens in URL hash
     const handleAuthCallback = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
-        // OAuth callback detected, clear the hash and stay on landing page
         window.history.replaceState(null, '', window.location.pathname);
       }
 
-      // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session?.user);
+      if (session?.user) {
+        fetchTier(session.user.id);
+      }
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session?.user);
+      if (session?.user) {
+        setTimeout(() => fetchTier(session.user.id), 0);
+      } else {
+        setTier(null);
+      }
     });
 
     handleAuthCallback();
@@ -41,13 +59,24 @@ export default function LandingPage() {
       {/* Header */}
       <header className="flex items-center justify-between p-6">
         <Logo size="sm" />
-        {isLoggedIn ? (
-          <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
-            <Settings className="w-5 h-5 text-muted-foreground" />
-          </Link>
-        ) : (
-          <ThemeToggle />
-        )}
+        <div className="flex items-center gap-2">
+          {isLoggedIn && tier && (
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
+              tier === 'pro' 
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border-amber-400' 
+                : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+            }`}>
+              {tier === 'pro' ? 'PRO ✨' : 'FREE'}
+            </span>
+          )}
+          {isLoggedIn ? (
+            <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+              <Settings className="w-5 h-5 text-muted-foreground" />
+            </Link>
+          ) : (
+            <ThemeToggle />
+          )}
+        </div>
       </header>
 
       {/* Main Content */}
