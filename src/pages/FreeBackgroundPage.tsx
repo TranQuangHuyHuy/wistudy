@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Upload, Images } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, Images, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { StepIndicator } from '@/components/wistudy/StepIndicator';
@@ -52,6 +52,13 @@ export default function FreeBackgroundPage() {
     setSelected('library-image');
   };
 
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCustomBackground(null);
+    setSelected(null);
+  };
+
   const handleContinue = () => {
     if (!selected) return;
     setSelectedBackground(customBackground);
@@ -93,17 +100,25 @@ export default function FreeBackgroundPage() {
           <div className="grid grid-cols-2 gap-4">
             {/* Image Library */}
             <button
-              onClick={() => setShowLibrary(true)}
+              onClick={() => selected !== 'custom' && setShowLibrary(true)}
+              disabled={selected === 'custom'}
               className={`
                 relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-square
                 border-2 ${selected === 'library-image' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
                 flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
+                ${selected === 'custom' ? 'opacity-50 cursor-not-allowed' : ''}
               `}
             >
               {selected === 'library-image' && customBackground ? (
                 <>
                   <img src={customBackground} alt="Library" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90 transition-colors z-10"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                   <p className="absolute bottom-3 left-3 text-primary-foreground text-sm font-medium">
                     Thư viện
                   </p>
@@ -118,14 +133,21 @@ export default function FreeBackgroundPage() {
 
             {/* Custom Upload */}
             <label className={`
-              relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-square cursor-pointer
+              relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-square
               border-2 ${selected === 'custom' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
               flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
+              ${selected === 'library-image' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}>
               {selected === 'custom' && customBackground ? (
                 <>
                   <img src={customBackground} alt="Custom" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90 transition-colors z-10"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                   <p className="absolute bottom-3 left-3 text-primary-foreground text-sm font-medium">
                     Tùy chỉnh
                   </p>
@@ -141,6 +163,7 @@ export default function FreeBackgroundPage() {
                 className="hidden"
                 accept="image/*"
                 onChange={handleCustomUpload}
+                disabled={selected === 'library-image'}
               />
             </label>
           </div>
