@@ -15,6 +15,7 @@ import EmailConfirmationPage from "./pages/EmailConfirmationPage";
 import UploadIdolPage from "./pages/UploadIdolPage";
 import SettingsPage from "./pages/SettingsPage";
 import ChooseBackgroundPage from "./pages/ChooseBackgroundPage";
+import FreeBackgroundPage from "./pages/FreeBackgroundPage";
 import GeneratePage from "./pages/GeneratePage";
 import MusicSelectionPage from "./pages/MusicSelectionPage";
 import PomodoroSetupPage from "./pages/PomodoroSetupPage";
@@ -43,6 +44,7 @@ function App() {
                   {/* Protected routes */}
                   <Route path="/upload-idol" element={<ProtectedRoute><UploadIdolPage /></ProtectedRoute>} />
                   <Route path="/choose-background" element={<ProtectedRoute><ChooseBackgroundPage /></ProtectedRoute>} />
+                  <Route path="/free-background" element={<ProtectedRoute><FreeBackgroundPage /></ProtectedRoute>} />
                   <Route path="/generate" element={<ProtectedRoute><GeneratePage /></ProtectedRoute>} />
                   <Route path="/choose-music" element={<ProtectedRoute><MusicSelectionPage /></ProtectedRoute>} />
                   <Route path="/pomodoro-setup" element={<ProtectedRoute><PomodoroSetupPage /></ProtectedRoute>} />
