@@ -213,8 +213,10 @@ export default function SettingsPage() {
             {/* Subscription Tier */}
             <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
-                  <Crown className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  tier === 'pro' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-secondary'
+                }`}>
+                  <Crown className={`w-5 h-5 ${tier === 'pro' ? 'text-white' : 'text-muted-foreground'}`} />
                 </div>
                 <h2 className="font-semibold">Gói đăng ký</h2>
               </div>
