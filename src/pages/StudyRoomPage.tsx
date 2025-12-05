@@ -100,6 +100,12 @@ export default function StudyRoomPage() {
               alt="Study companion"
               className="w-full h-full object-cover"
             />
+          ) : userData.selectedBackground ? (
+            <img
+              src={userData.selectedBackground}
+              alt="Study background"
+              className="w-full h-full object-cover"
+            />
           ) : userData.idolImage ? (
             <img
               src={userData.idolImage}
