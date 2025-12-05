@@ -26,11 +26,28 @@ export default function LandingPage() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
+      const hash = window.location.hash;
       
-      if (accessToken) {
-        window.history.replaceState(null, '', window.location.pathname);
+      // Handle OAuth callback tokens
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          const { data } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          
+          window.history.replaceState(null, '', window.location.pathname);
+          
+          if (data?.session?.user) {
+            setIsLoggedIn(true);
+            fetchTier(data.session.user.id);
+            return;
+          }
+        }
       }
 
       const { data: { session } } = await supabase.auth.getSession();
