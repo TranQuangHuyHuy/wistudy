@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/wistudy/Logo';
-import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette } from 'lucide-react';
+import { ArrowLeft, User, Mail, Calendar, LogOut, Loader2, Save, Moon, Sun, Palette, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThemeSync } from '@/hooks/useThemeSync';
+import { Database } from '@/integrations/supabase/types';
+
+type SubscriptionTier = Database['public']['Enums']['subscription_tier'];
 
 interface Profile {
   id: string;
@@ -21,6 +25,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useThemeSync();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState('');
+  const [tier, setTier] = useState<SubscriptionTier>('free');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -66,6 +71,14 @@ export default function SettingsPage() {
         setProfile(data);
         setFullName(data.full_name || '');
       }
+
+      // Fetch subscription tier
+      const { data: subData } = await supabase
+        .from('user_subscriptions')
+        .select('tier')
+        .eq('user_id', user.id)
+        .single();
+      if (subData) setTier(subData.tier);
     } catch (err) {
       console.error('Error:', err);
     } finally {
@@ -194,6 +207,36 @@ export default function SettingsPage() {
                   )}
                   Lưu thay đổi
                 </Button>
+              </div>
+            </div>
+
+            {/* Subscription Tier */}
+            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  tier === 'pro' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-secondary'
+                }`}>
+                  <Crown className={`w-5 h-5 ${tier === 'pro' ? 'text-white' : 'text-muted-foreground'}`} />
+                </div>
+                <h2 className="font-semibold">Gói đăng ký</h2>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                <div>
+                  <p className="text-sm font-medium">Gói hiện tại</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {tier === 'pro' ? 'Truy cập đầy đủ tính năng' : 'Tính năng cơ bản'}
+                  </p>
+                </div>
+                <Badge 
+                  className={`text-xs font-semibold px-3 py-1.5 ${
+                    tier === 'pro' 
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' 
+                      : 'bg-secondary text-muted-foreground'
+                  }`}
+                >
+                  {tier === 'pro' ? 'PRO' : 'FREE'}
+                </Badge>
               </div>
             </div>
 
