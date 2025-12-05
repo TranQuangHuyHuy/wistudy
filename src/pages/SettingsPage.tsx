@@ -229,13 +229,13 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <Badge 
-                  className={`text-xs font-semibold px-3 py-1.5 ${
+                  className={`text-xs font-bold px-3 py-1.5 border-2 shadow-sm ${
                     tier === 'pro' 
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' 
-                      : 'bg-secondary text-muted-foreground'
+                      ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border-amber-300 dark:border-amber-600' 
+                      : 'bg-emerald-500 text-white border-emerald-400 dark:border-emerald-600'
                   }`}
                 >
-                  {tier === 'pro' ? 'PRO' : 'FREE'}
+                  {tier === 'pro' ? '✨ PRO' : 'FREE'}
                 </Badge>
               </div>
             </div>

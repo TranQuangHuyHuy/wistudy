@@ -69,14 +69,13 @@ export default function LandingPage() {
         {isLoggedIn ? (
           <div className="flex items-center gap-2">
             <Badge 
-              variant={tier === 'pro' ? 'default' : 'secondary'}
-              className={`text-xs font-semibold px-2.5 py-1 ${
+              className={`text-xs font-bold px-3 py-1.5 border-2 shadow-sm ${
                 tier === 'pro' 
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' 
-                  : 'bg-secondary text-muted-foreground'
+                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border-amber-300 dark:border-amber-600' 
+                  : 'bg-emerald-500 text-white border-emerald-400 dark:border-emerald-600'
               }`}
             >
-              {tier === 'pro' ? 'PRO' : 'FREE'}
+              {tier === 'pro' ? '✨ PRO' : 'FREE'}
             </Badge>
             <Link to="/settings" className="p-2.5 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
               <Settings className="w-5 h-5 text-muted-foreground" />
