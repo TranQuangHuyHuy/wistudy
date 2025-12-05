@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { BookOpen, Sparkles, Clock, ArrowRight, Settings } from 'lucide-react';
+import { BookOpen, Sparkles, Clock, ArrowRight, Settings, Check, X, MessageCircle, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type SubscriptionTier = 'free' | 'pro';
@@ -97,7 +97,7 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-6 page-transition">
+      <main className="flex-1 flex flex-col items-center px-6 pb-6 page-transition overflow-y-auto">
         <div className="w-full max-w-md mx-auto space-y-8">
           {/* Hero */}
           <div className="text-center space-y-4">
@@ -129,6 +129,93 @@ export default function LandingPage() {
               <p className="text-xs text-muted-foreground leading-relaxed">Quản lý thời gian hiệu quả</p>
             </div>
           </div>
+
+          {/* So sánh FREE vs PRO - hiển thị khi đã đăng nhập */}
+          {isLoggedIn && (
+            <div className="space-y-4">
+              {/* Bảng so sánh */}
+              <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5">
+                <h2 className="text-lg font-bold text-center mb-4 flex items-center justify-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  So sánh gói dịch vụ
+                </h2>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* FREE Column */}
+                  <div className="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20">
+                    <div className="text-center mb-3">
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">FREE 🆓</span>
+                      <p className="text-xs text-muted-foreground">Miễn phí mãi mãi</p>
+                    </div>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <span>Chọn ảnh nền từ thư viện</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <span>Pomodoro thông minh</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <span>Nhạc Lo-fi, Piano, Ambient</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-muted-foreground">
+                        <X className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                        <span>AI tạo ảnh độc quyền</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* PRO Column */}
+                  <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-xl p-4 border border-amber-500/30">
+                    <div className="text-center mb-3">
+                      <span className="text-lg font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">PRO ✨</span>
+                      <p className="text-xs text-muted-foreground">Trải nghiệm cao cấp</p>
+                    </div>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>Tất cả tính năng FREE</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>Upload ảnh cá nhân</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>AI tạo ảnh độc quyền</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>Background đa dạng</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thông tin liên lạc Zalo */}
+              <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 text-center">
+                <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-blue-500" />
+                  Cần hỗ trợ?
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Hỏi đáp • Báo lỗi • Nâng cấp PRO
+                </p>
+                <a 
+                  href="https://zalo.me/0777542766" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors shadow-soft"
+                >
+                  <Phone className="w-4 h-4" />
+                  Chat Zalo: 0777 542 766
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
