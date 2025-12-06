@@ -325,7 +325,7 @@ export default function GeneratePage() {
           {/* Info Card */}
           <div className="p-4 bg-gradient-to-r from-accent-blue/40 to-accent-pink/30 rounded-2xl border border-primary/20">
             <p className="text-sm text-foreground leading-relaxed">
-              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Mỗi ngày {userName} có thể tạo tối đa 2 ảnh (reset lúc
+              💡 <strong>Mẹo:</strong> Ảnh được tạo bằng AI. Mỗi ngày {userName} có thể tạo tối đa 3 ảnh (reset lúc
               00:00).
             </p>
           </div>
