@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Music2, GripVertical, VolumeX, AudioLines } from 'lucide-react';
+import { Music2, GripVertical, VolumeX } from 'lucide-react';
 import { MusicSelection } from '@/types/wistudy';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +11,7 @@ interface MusicPlayerProps {
 }
 
 export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicPlayerProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
   const [position, setPosition] = useState({ x: 16, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const offsetRef = useRef({ x: 0, y: 0 });
@@ -23,8 +24,8 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
         height: playerRef.current.offsetHeight
       };
     }
-    return { width: 400, height: 280 };
-  }, []);
+    return { width: 320, height: isExpanded ? 240 : 50 };
+  }, [isExpanded]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -50,12 +51,14 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
     };
 
     const handleMouseUp = () => {
+      console.log('mouseup fired, stopping drag');
       setIsDragging(false);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
 
     if (isDragging) {
+      console.log('Adding drag listeners');
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -66,14 +69,14 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
     };
   }, [isDragging, getElementSize]);
 
-  // Adjust position when bounds change
+  // Adjust position when expanding to keep within bounds
   useEffect(() => {
     const size = getElementSize();
     setPosition(prev => ({
       x: Math.max(0, Math.min(window.innerWidth - size.width, prev.x)),
       y: Math.max(0, Math.min(window.innerHeight - size.height, prev.y))
     }));
-  }, [getElementSize]);
+  }, [isExpanded, getElementSize]);
 
   // Handle window resize
   useEffect(() => {
@@ -92,6 +95,7 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('mousedown, starting drag');
     setIsDragging(true);
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'grabbing';
@@ -105,9 +109,8 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
     <div 
       ref={playerRef}
       className={cn(
-        "fixed z-50 bg-background/90 backdrop-blur-xl rounded-3xl border border-border/30 shadow-elevated overflow-hidden",
-        !isVisible && "pointer-events-none opacity-0",
-        "transition-all duration-300"
+        "fixed z-50 bg-background/95 backdrop-blur-sm rounded-2xl border border-border shadow-xl overflow-hidden",
+        !isVisible && "pointer-events-none opacity-0"
       )}
       style={{ left: position.x, top: position.y }}
     >
@@ -116,67 +119,38 @@ export function MusicPlayer({ music, onClose, isVisible, muted = false }: MusicP
         <div className="absolute inset-0 z-50 bg-transparent" />
       )}
       
-      {/* Enhanced Header with gradient */}
+      {/* Header - Draggable */}
       <div 
-        className="flex items-center justify-between px-5 py-3.5 cursor-grab select-none active:cursor-grabbing bg-gradient-to-r from-primary/10 via-blue-500/10 to-cyan-500/10 border-b border-border/30"
+        className="flex items-center justify-center p-2 border-b border-border bg-muted/50 cursor-grab select-none active:cursor-grabbing"
         onMouseDown={handleMouseDown}
       >
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center">
-              <Music2 className="h-5 w-5 text-white" />
-            </div>
-            {/* Animated ring */}
-            {!muted && (
-              <div className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping" style={{ animationDuration: '2s' }} />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground line-clamp-1 max-w-[200px]">
-              {music.name}
-            </span>
-            <span className="text-xs text-muted-foreground">Đang phát</span>
-          </div>
+        <div className="flex items-center gap-2 px-1">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <Music2 className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">{music.name}</span>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Music visualizer animation */}
-          {!muted && (
-            <div className="flex items-end gap-0.5 h-5">
-              <div className="w-1 bg-primary rounded-full music-bar" style={{ height: '60%', animationDelay: '0ms' }} />
-              <div className="w-1 bg-primary rounded-full music-bar" style={{ height: '100%', animationDelay: '150ms' }} />
-              <div className="w-1 bg-primary rounded-full music-bar" style={{ height: '40%', animationDelay: '300ms' }} />
-              <div className="w-1 bg-primary rounded-full music-bar" style={{ height: '80%', animationDelay: '450ms' }} />
+      </div>
+
+      {/* Player */}
+      {isExpanded && (
+        <div className="w-80 h-48">
+          {muted ? (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted/30">
+              <VolumeX className="w-12 h-12 text-muted-foreground mb-2" />
+              <span className="text-sm text-muted-foreground">Đã tắt âm thanh</span>
             </div>
+          ) : (
+            <iframe
+              src={music.url}
+              width="100%"
+              height="100%"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="border-0"
+            />
           )}
-          <GripVertical className="h-5 w-5 text-muted-foreground" />
         </div>
-      </div>
-
-      {/* Player content */}
-      <div className="w-96 h-52 relative">
-        {muted ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-muted/20 to-muted/40">
-            <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-              <VolumeX className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <span className="text-sm font-medium text-muted-foreground">Đã tắt âm thanh</span>
-            <span className="text-xs text-muted-foreground/70 mt-1">Bật lại để nghe nhạc</span>
-          </div>
-        ) : (
-          <iframe
-            src={music.url}
-            width="100%"
-            height="100%"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="border-0"
-          />
-        )}
-      </div>
-
-      {/* Bottom wave decoration */}
-      <div className="h-1.5 bg-gradient-to-r from-primary via-blue-500 to-cyan-500 opacity-80" />
+      )}
     </div>
   );
 }
