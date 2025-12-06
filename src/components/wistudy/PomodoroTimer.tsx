@@ -153,7 +153,7 @@ export function PomodoroTimer({
         height: dragRef.current.offsetHeight
       };
     }
-    return { width: 120, height: 160 };
+    return { width: 160, height: 200 };
   }, []);
 
   // Drag handlers
@@ -238,72 +238,96 @@ export function PomodoroTimer({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Compact version for overlay
+  // Compact version for overlay with enhanced UI
   if (compact) {
-    const compactCircumference = 2 * Math.PI * 28;
+    const compactCircumference = 2 * Math.PI * 42;
     const compactStrokeDashoffset = compactCircumference - (progress / 100) * compactCircumference;
 
     return (
       <div 
         ref={dragRef}
         className={cn(
-          "bg-background/85 backdrop-blur-md rounded-xl shadow-lg select-none",
-          draggable && "fixed z-50"
+          "bg-background/90 backdrop-blur-xl rounded-3xl shadow-elevated select-none border border-border/30",
+          draggable && "fixed z-50",
+          isRunning && "timer-glow"
         )}
         style={draggable ? { left: position.x, top: position.y } : undefined}
       >
         {/* Drag header */}
         {draggable && (
           <div 
-            className="flex items-center justify-center gap-1 p-1.5 border-b border-border/50 cursor-grab active:cursor-grabbing"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 border-b border-border/30 cursor-grab active:cursor-grabbing bg-muted/30 rounded-t-3xl"
             onMouseDown={handleDragStart}
             onTouchStart={handleDragStart}
           >
-            <GripVertical className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground">Kéo để di chuyển</span>
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
         )}
         
-        <div className="flex flex-col items-center p-2.5" onDoubleClick={onDoubleClick}>
-          {/* Status Badge */}
+        <div className="flex flex-col items-center p-5" onDoubleClick={onDoubleClick}>
+          {/* Enhanced Status Badge with gradient */}
           <div className={cn(
-            "flex items-center gap-1 px-2 py-0.5 rounded-full mb-2 transition-colors duration-300",
-            isBreak ? "bg-accent-pink" : "bg-accent-blue"
+            "flex items-center gap-2 px-4 py-1.5 rounded-full mb-4 transition-all duration-300",
+            isBreak 
+              ? "bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-500/30" 
+              : "bg-gradient-to-r from-primary/20 to-blue-500/20 border border-primary/30"
           )}>
             {isBreak ? (
-              <Coffee className="w-2.5 h-2.5 text-primary" />
+              <Coffee className="w-3.5 h-3.5 text-pink-500" />
             ) : (
-              <span className="w-1 h-1 rounded-full bg-primary animate-pulse-soft" />
+              <span className={cn(
+                "w-2 h-2 rounded-full",
+                isRunning ? "bg-primary animate-pulse" : "bg-primary/50"
+              )} />
             )}
-            <span className="text-[10px] font-medium">
-              {isBreak ? "Nghỉ" : "Học"} · {currentRound}/{rounds}
+            <span className="text-xs font-semibold tracking-wide">
+              {isBreak ? "Nghỉ ngơi" : "Đang học"}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {currentRound}/{rounds}
             </span>
           </div>
 
-          {/* Timer Circle */}
-          <div className="relative w-16 h-16 mb-2">
-            <svg className="w-full h-full transform -rotate-90">
+          {/* Enhanced Timer Circle with glow effect */}
+          <div className={cn(
+            "relative w-28 h-28 mb-5",
+            isRunning && !isBreak && "timer-circle-glow-blue",
+            isRunning && isBreak && "timer-circle-glow-pink"
+          )}>
+            {/* Background glow */}
+            <div className={cn(
+              "absolute inset-0 rounded-full blur-xl transition-opacity duration-500",
+              isRunning ? "opacity-40" : "opacity-0",
+              isBreak ? "bg-pink-500/30" : "bg-primary/30"
+            )} />
+            
+            <svg className="w-full h-full transform -rotate-90 relative z-10">
+              {/* Background circle */}
               <circle
-                cx="32"
-                cy="32"
-                r="28"
+                cx="56"
+                cy="56"
+                r="42"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="6"
                 fill="none"
-                className="text-border/50"
+                className="text-border/30"
               />
+              {/* Gradient progress circle */}
+              <defs>
+                <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={isBreak ? "#ec4899" : "#3b82f6"} />
+                  <stop offset="100%" stopColor={isBreak ? "#f43f5e" : "#06b6d4"} />
+                </linearGradient>
+              </defs>
               <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="currentColor"
-                strokeWidth="3"
+                cx="56"
+                cy="56"
+                r="42"
+                stroke="url(#timerGradient)"
+                strokeWidth="6"
                 fill="none"
                 strokeLinecap="round"
-                className={cn(
-                  "transition-all duration-1000",
-                  isBreak ? "text-accent-pink" : "text-primary"
-                )}
+                className="transition-all duration-1000"
                 style={{
                   strokeDasharray: compactCircumference,
                   strokeDashoffset: compactStrokeDashoffset
@@ -311,36 +335,45 @@ export function PomodoroTimer({
               />
             </svg>
             
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm font-medium tracking-tight text-foreground">
+            {/* Time display */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+              <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
                 {formatTime(timeLeft)}
               </span>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-1.5">
+          {/* Enhanced Controls with pill buttons */}
+          <div className="flex items-center gap-3">
             <Button
               variant="secondary"
               size="icon"
               onClick={(e) => { e.stopPropagation(); resetTimer(); }}
-              className="w-6 h-6 rounded-full"
+              className="w-10 h-10 rounded-full hover:scale-105 transition-transform bg-muted/80 hover:bg-muted"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-4 h-4" />
             </Button>
             
             <Button
-              size="icon"
+              size="lg"
               onClick={(e) => { e.stopPropagation(); toggleTimer(); }}
               className={cn(
-                "w-8 h-8 rounded-full",
-                isRunning ? "bg-accent-pink hover:bg-accent-pink/80" : ""
+                "h-12 px-6 rounded-full font-semibold transition-all duration-300 hover:scale-105 gap-2",
+                isRunning 
+                  ? "bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-pink-500/30" 
+                  : "bg-gradient-to-r from-primary to-blue-500 hover:from-primary/90 hover:to-blue-600 text-white shadow-lg shadow-primary/30"
               )}
             >
               {isRunning ? (
-                <Pause className="w-3.5 h-3.5" />
+                <>
+                  <Pause className="w-4 h-4" />
+                  <span>Tạm dừng</span>
+                </>
               ) : (
-                <Play className="w-3.5 h-3.5 ml-0.5" />
+                <>
+                  <Play className="w-4 h-4 ml-0.5" />
+                  <span>Bắt đầu</span>
+                </>
               )}
             </Button>
           </div>

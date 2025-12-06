@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, Maximize, Minimize, Music2, Volume2, VolumeX } from 'lucide-react';
+import { X, Clock, Maximize, Minimize, Music2, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -18,10 +18,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function StudyRoomPage() {
   const navigate = useNavigate();
-  const { userData, resetApp, setSelectedMusic } = useWiStudy();
+  const { userData } = useWiStudy();
   const [showTimer, setShowTimer] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
@@ -86,152 +92,198 @@ export default function StudyRoomPage() {
   }, [isFullscreen]);
 
   return (
-    <div 
-      className="min-h-screen bg-background relative"
-      onMouseMove={handleMouseMove}
-    >
-      {/* Main Content - Full screen image with overlays */}
-      <main className="absolute inset-0 animate-fade-in">
-        {/* Full screen image */}
-        <div className="absolute inset-0">
-          {userData.generatedImage ? (
-            <img
-              src={userData.generatedImage}
-              alt="Study companion"
-              className="w-full h-full object-cover"
-            />
-          ) : userData.selectedBackground ? (
-            <img
-              src={userData.selectedBackground}
-              alt="Study background"
-              className="w-full h-full object-cover"
-            />
-          ) : userData.idolImage ? (
-            <img
-              src={userData.idolImage}
-              alt="Study companion"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-accent-blue to-accent-pink flex items-center justify-center">
-              <p className="text-muted-foreground">Không có ảnh</p>
-            </div>
-          )}
-        </div>
-
-        {/* Overlays container - buttons only, fade after 5s */}
-        <div className={cn(
-          "transition-opacity duration-300",
-          showOverlays ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}>
-          {/* Logo overlay - top left */}
-          <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 py-2">
-            <Logo size="sm" />
+    <TooltipProvider delayDuration={300}>
+      <div 
+        className="min-h-screen bg-background relative"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Main Content - Full screen image with overlays */}
+        <main className="absolute inset-0 animate-fade-in">
+          {/* Full screen image */}
+          <div className="absolute inset-0">
+            {userData.generatedImage ? (
+              <img
+                src={userData.generatedImage}
+                alt="Study companion"
+                className="w-full h-full object-cover"
+              />
+            ) : userData.selectedBackground ? (
+              <img
+                src={userData.selectedBackground}
+                alt="Study background"
+                className="w-full h-full object-cover"
+              />
+            ) : userData.idolImage ? (
+              <img
+                src={userData.idolImage}
+                alt="Study companion"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-accent-blue to-accent-pink flex items-center justify-center">
+                <p className="text-muted-foreground">Không có ảnh</p>
+              </div>
+            )}
           </div>
 
-          {/* Exit button - below logo */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute top-16 left-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Thoát phòng học?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tiến trình học hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Tiếp tục học</AlertDialogCancel>
-                <AlertDialogAction onClick={handleExit}>
-                  Thoát phòng học
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {/* Overlays container - buttons only, fade after 5s */}
+          <div className={cn(
+            "transition-opacity duration-500",
+            showOverlays ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}>
+            {/* Logo overlay - top left with glassmorphism */}
+            <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-xl rounded-2xl px-4 py-2.5 border border-border/30 shadow-lg">
+              <Logo size="sm" />
+            </div>
 
-          {/* Timer toggle button */}
-          <Button
-            onClick={() => setShowTimer(!showTimer)}
-            className="absolute top-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-            size="icon"
-          >
-            <Clock className="w-5 h-5 text-foreground" />
-          </Button>
+            {/* Exit button - below logo */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-[72px] left-4 z-10 bg-background/80 hover:bg-background/90 backdrop-blur-xl rounded-full w-11 h-11 border border-border/30 shadow-lg hover:scale-105 transition-all"
+                >
+                  <X className="w-5 h-5 text-foreground" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Thoát phòng học?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tiến trình học hiện tại sẽ không được lưu. Bạn có chắc muốn thoát?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-full">Tiếp tục học</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleExit} className="rounded-full">
+                    Thoát phòng học
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
-          {/* Music button - below timer button */}
+            {/* Floating control bar - right side */}
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-background/80 backdrop-blur-xl rounded-full px-2 py-2 border border-border/30 shadow-lg">
+              {/* Timer toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setShowTimer(!showTimer)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "rounded-full w-10 h-10 transition-all hover:scale-105",
+                      showTimer && "bg-primary/20 text-primary"
+                    )}
+                  >
+                    <Clock className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{showTimer ? 'Ẩn đồng hồ' : 'Hiện đồng hồ'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Music toggle */}
+              {userData.selectedMusic && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => setShowMusicPlayer(!showMusicPlayer)}
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "rounded-full w-10 h-10 transition-all hover:scale-105",
+                        showMusicPlayer && "bg-primary/20 text-primary"
+                      )}
+                    >
+                      <Music2 className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{showMusicPlayer ? 'Ẩn nhạc' : 'Hiện nhạc'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Sound toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setIsMuted(!isMuted)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "rounded-full w-10 h-10 transition-all hover:scale-105",
+                      isMuted && "bg-destructive/20 text-destructive"
+                    )}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5" />
+                    ) : (
+                      <Volume2 className="w-5 h-5" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Divider */}
+              <div className="w-px h-6 bg-border/50" />
+
+              {/* Fullscreen toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={toggleFullscreen}
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full w-10 h-10 transition-all hover:scale-105"
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="w-5 h-5" />
+                    ) : (
+                      <Maximize className="w-5 h-5" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+
+          {/* Timer panel - always mounted, visibility controlled */}
+          <div className={cn(
+            "transition-all duration-500",
+            showTimer ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+          )}>
+            <PomodoroTimer
+              studyTime={userData.pomodoroSettings.studyTime}
+              breakTime={userData.pomodoroSettings.breakTime}
+              rounds={userData.pomodoroSettings.rounds}
+              compact
+              draggable
+              muted={isMuted}
+              initialPosition={{ x: window.innerWidth - 220, y: 80 }}
+            />
+          </div>
+
+          {/* Music Player - outside overlay, stays visible */}
           {userData.selectedMusic && (
-            <Button
-              onClick={() => setShowMusicPlayer(!showMusicPlayer)}
-              className="absolute top-[68px] right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-              size="icon"
-            >
-              <Music2 className="w-5 h-5 text-foreground" />
-            </Button>
+            <MusicPlayer 
+              music={userData.selectedMusic} 
+              onClose={() => setShowMusicPlayer(false)}
+              isVisible={showMusicPlayer}
+              muted={isMuted}
+            />
           )}
-
-          {/* Sound toggle button - below music button */}
-          <Button
-            onClick={() => setIsMuted(!isMuted)}
-            className={cn(
-              "absolute right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform",
-              userData.selectedMusic ? "top-[124px]" : "top-[68px]"
-            )}
-            size="icon"
-          >
-            {isMuted ? (
-              <VolumeX className="w-5 h-5 text-foreground" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-foreground" />
-            )}
-          </Button>
-
-          {/* Fullscreen button - bottom right */}
-          <Button
-            onClick={toggleFullscreen}
-            className="absolute bottom-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-            size="icon"
-          >
-            {isFullscreen ? (
-              <Minimize className="w-5 h-5 text-foreground" />
-            ) : (
-              <Maximize className="w-5 h-5 text-foreground" />
-            )}
-          </Button>
-        </div>
-
-        {/* Timer panel - always mounted, visibility controlled */}
-        <div className={cn(
-          "transition-opacity duration-300",
-          showTimer ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}>
-          <PomodoroTimer
-            studyTime={userData.pomodoroSettings.studyTime}
-            breakTime={userData.pomodoroSettings.breakTime}
-            rounds={userData.pomodoroSettings.rounds}
-            compact
-            draggable
-            muted={isMuted}
-            initialPosition={{ x: window.innerWidth - 180, y: 16 }}
-          />
-        </div>
-
-        {/* Music Player - outside overlay, stays visible */}
-        {userData.selectedMusic && (
-          <MusicPlayer 
-            music={userData.selectedMusic} 
-            onClose={() => setShowMusicPlayer(false)}
-            isVisible={showMusicPlayer}
-            muted={isMuted}
-          />
-        )}
-      </main>
-    </div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
