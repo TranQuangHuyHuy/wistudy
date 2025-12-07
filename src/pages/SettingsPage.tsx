@@ -159,23 +159,30 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Đang tải...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
-      <header className="p-6 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:scale-105 transition-transform">
+    <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-10 w-56 h-56 bg-primary/10 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-40 left-10 w-48 h-48 bg-accent-pink/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
+      <header className="p-6 flex items-center gap-4 relative z-10">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:scale-110 transition-all duration-300">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <Logo size="sm" />
       </header>
 
-      <main className="flex-1 px-6 pb-12 page-transition">
-        <div className="w-full max-w-md mx-auto space-y-6">
-          <div>
+      <main className="flex-1 px-6 pb-12 page-transition relative z-10">
+        <div className="w-full max-w-md mx-auto space-y-5">
+          <div className="animate-slide-up">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Cài đặt</h1>
             <p className="text-muted-foreground text-sm mt-1">
               Quản lý thông tin tài khoản của bạn
@@ -184,37 +191,38 @@ export default function SettingsPage() {
 
           {/* Profile Info */}
           <div className="space-y-4">
-            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent-blue rounded-xl flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
+            <div className="p-6 bg-card rounded-3xl shadow-card border border-border/50 space-y-5 glass-card animate-scale-in">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-accent-blue to-primary/30 rounded-2xl flex items-center justify-center shadow-lg">
+                  <User className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="font-semibold">Thông tin cá nhân</h2>
+                <h2 className="font-bold text-lg">Thông tin cá nhân</h2>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">Họ và tên</Label>
+                  <Label htmlFor="fullName" className="text-sm font-semibold">Họ và tên</Label>
                   <Input
                     id="fullName"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Nhập họ và tên"
+                    className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Email</Label>
-                  <div className="flex items-center gap-2 p-3 bg-muted rounded-xl">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-sm font-semibold">Email</Label>
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-xl">
+                    <Mail className="w-5 h-5 text-muted-foreground" />
                     <span className="text-sm">{profile?.email || 'Chưa có'}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Ngày tham gia</Label>
-                  <div className="flex items-center gap-2 p-3 bg-muted rounded-xl">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-sm font-semibold">Ngày tham gia</Label>
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-xl">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
                     <span className="text-sm">
                       {profile?.created_at ? formatDate(profile.created_at) : 'Không xác định'}
                     </span>
@@ -224,12 +232,12 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleSave}
                   disabled={isSaving || fullName === profile?.full_name}
-                  className="w-full shadow-soft"
+                  className="w-full"
                 >
                   {isSaving ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   ) : (
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="w-5 h-5 mr-2" />
                   )}
                   Lưu thay đổi
                 </Button>
@@ -237,70 +245,70 @@ export default function SettingsPage() {
             </div>
 
             {/* Theme Settings */}
-            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent-pink rounded-xl flex items-center justify-center">
-                  <Palette className="w-5 h-5 text-primary" />
+            <div className="p-6 bg-card rounded-3xl shadow-card border border-border/50 space-y-5 glass-card animate-scale-in" style={{ animationDelay: '0.1s' }}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-accent-pink to-primary/30 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Palette className="w-6 h-6 text-primary" />
                 </div>
-                <h2 className="font-semibold">Giao diện</h2>
+                <h2 className="font-bold text-lg">Giao diện</h2>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <button
                   onClick={() => setTheme('light')}
-                  className={`flex-1 p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
+                  className={`flex-1 p-5 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 ${
                     theme === 'light' 
-                      ? 'border-primary bg-primary/10 shadow-soft' 
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10' 
+                      : 'border-border hover:border-primary/50 hover:shadow-lg'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    theme === 'light' ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    theme === 'light' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-secondary'
                   }`}>
-                    <Sun className="w-5 h-5" />
+                    <Sun className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium">Sáng</span>
+                  <span className="text-sm font-bold">Sáng</span>
                 </button>
                 
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`flex-1 p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
+                  className={`flex-1 p-5 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 ${
                     theme === 'dark' 
-                      ? 'border-primary bg-primary/10 shadow-soft' 
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10' 
+                      : 'border-border hover:border-primary/50 hover:shadow-lg'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    theme === 'dark' ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    theme === 'dark' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-secondary'
                   }`}>
-                    <Moon className="w-5 h-5" />
+                    <Moon className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium">Tối</span>
+                  <span className="text-sm font-bold">Tối</span>
                 </button>
               </div>
             </div>
 
             {/* Subscription Tier */}
-            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            <div className="p-6 bg-card rounded-3xl shadow-card border border-border/50 space-y-5 glass-card animate-scale-in" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
                   tier === 'pro' 
                     ? 'bg-gradient-to-br from-amber-500 to-amber-600' 
                     : 'bg-emerald-500/20'
                 }`}>
-                  <Crown className={`w-5 h-5 ${tier === 'pro' ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                  <Crown className={`w-6 h-6 ${tier === 'pro' ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
                 </div>
-                <h2 className="font-semibold">Gói đăng ký</h2>
+                <h2 className="font-bold text-lg">Gói đăng ký</h2>
               </div>
               
-              <div className={`p-4 rounded-xl border-2 ${
+              <div className={`p-5 rounded-2xl border-2 transition-all duration-300 ${
                 tier === 'pro'
                   ? 'bg-gradient-to-r from-amber-500/10 to-amber-600/10 border-amber-500/30'
                   : 'bg-emerald-500/5 border-emerald-500/20'
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className={`text-lg font-bold ${
+                    <span className={`text-xl font-bold ${
                       tier === 'pro' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
                     }`}>
                       {tier === 'pro' ? 'PRO ✨' : 'FREE'}
@@ -309,7 +317,7 @@ export default function SettingsPage() {
                       {tier === 'pro' ? 'Truy cập đầy đủ tính năng' : 'Gói miễn phí cơ bản'}
                     </p>
                   </div>
-                  <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                  <span className={`px-4 py-2 rounded-full text-xs font-bold border-2 ${
                     tier === 'pro'
                       ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border-amber-400'
                       : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
@@ -320,18 +328,18 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Admin Section - Only visible for admins */}
+            {/* Admin Section */}
             {isAdmin && (
-              <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-white" />
+              <div className="p-6 bg-card rounded-3xl shadow-card border border-border/50 space-y-5 glass-card animate-scale-in" style={{ animationDelay: '0.3s' }}>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Shield className="w-6 h-6 text-white" />
                   </div>
-                  <h2 className="font-semibold">Quản trị</h2>
+                  <h2 className="font-bold text-lg">Quản trị</h2>
                 </div>
                 <Link to="/admin">
                   <Button variant="outline" className="w-full">
-                    <Shield className="w-4 h-4 mr-2" />
+                    <Shield className="w-5 h-5 mr-2" />
                     Trang quản trị Admin
                   </Button>
                 </Link>
@@ -339,7 +347,7 @@ export default function SettingsPage() {
             )}
 
             {/* Logout */}
-            <div className="p-5 bg-card rounded-2xl shadow-soft border border-border/50">
+            <div className="p-6 bg-card rounded-3xl shadow-card border border-border/50 glass-card animate-scale-in" style={{ animationDelay: '0.4s' }}>
               <Button
                 variant="destructive"
                 onClick={handleLogout}
@@ -347,9 +355,9 @@ export default function SettingsPage() {
                 className="w-full"
               >
                 {isLoggingOut ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 ) : (
-                  <LogOut className="w-4 h-4 mr-2" />
+                  <LogOut className="w-5 h-5 mr-2" />
                 )}
                 Đăng xuất
               </Button>

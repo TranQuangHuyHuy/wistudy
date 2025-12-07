@@ -26,7 +26,6 @@ export default function MusicSelectionPage() {
     const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Fetch name
         const { data: profileData } = await supabase
           .from('profiles')
           .select('full_name')
@@ -37,7 +36,6 @@ export default function MusicSelectionPage() {
           setLastName(nameParts[nameParts.length - 1]);
         }
         
-        // Fetch tier
         const { data: subData } = await supabase
           .from('user_subscriptions')
           .select('tier')
@@ -119,10 +117,14 @@ export default function MusicSelectionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-5 w-56 h-56 bg-accent-pink/15 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-40 right-5 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
       {/* Header */}
-      <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate(tier === 'free' ? '/free-background' : '/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+      <header className="flex items-center justify-between p-6 relative z-10">
+        <button onClick={() => navigate(tier === 'free' ? '/free-background' : '/generate')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-300 hover:scale-110 active:scale-95">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -130,15 +132,15 @@ export default function MusicSelectionPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pb-6 page-transition">
+      <main className="flex-1 px-6 pb-6 page-transition relative z-10">
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
-          <div className="flex justify-center">
+          <div className="flex justify-center animate-fade-in">
             <StepIndicator currentStep={tier === 'free' ? 2 : 4} totalSteps={tier === 'free' ? 4 : 6} />
           </div>
           
           {/* Title */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 animate-slide-up">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Chọn nhạc cho {lastName}
             </h1>
@@ -148,39 +150,39 @@ export default function MusicSelectionPage() {
           </div>
 
           {/* Music Source Selection */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-3 animate-scale-in">
             <Button
               variant={musicSource === 'preset' ? 'default' : 'outline'}
               onClick={() => setMusicSource('preset')}
-              className="flex flex-col h-auto py-3 gap-1"
+              className="flex flex-col h-auto py-4 gap-2"
             >
-              <Radio className="h-5 w-5" />
-              <span className="text-xs">Gợi ý</span>
+              <Radio className="h-6 w-6" />
+              <span className="text-xs font-bold">Gợi ý</span>
             </Button>
             <Button
               variant={musicSource === 'youtube' ? 'default' : 'outline'}
               onClick={() => setMusicSource('youtube')}
-              className="flex flex-col h-auto py-3 gap-1"
+              className="flex flex-col h-auto py-4 gap-2"
             >
-              <Youtube className="h-5 w-5" />
-              <span className="text-xs">YouTube</span>
+              <Youtube className="h-6 w-6" />
+              <span className="text-xs font-bold">YouTube</span>
             </Button>
             <Button
               variant={musicSource === 'spotify' ? 'default' : 'outline'}
               onClick={() => setMusicSource('spotify')}
-              className="flex flex-col h-auto py-3 gap-1"
+              className="flex flex-col h-auto py-4 gap-2"
             >
-              <Music2 className="h-5 w-5" />
-              <span className="text-xs">Spotify</span>
+              <Music2 className="h-6 w-6" />
+              <span className="text-xs font-bold">Spotify</span>
             </Button>
           </div>
 
           {/* Preset Playlists */}
           {musicSource === 'preset' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Category Selection */}
-              <div className="grid grid-cols-3 gap-2">
-                {categories.map((cat) => (
+              <div className="grid grid-cols-3 gap-3">
+                {categories.map((cat, index) => (
                   <Button
                     key={cat.id}
                     variant={selectedCategory === cat.id ? 'default' : 'outline'}
@@ -189,50 +191,53 @@ export default function MusicSelectionPage() {
                       setSelectedCategory(cat.id);
                       setSelectedPlaylist(null);
                     }}
-                    className="flex items-center justify-center gap-1 text-xs px-2"
+                    className="flex items-center justify-center gap-2 text-xs px-3 py-2.5 opacity-0 animate-scale-in"
+                    style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
                   >
-                    <cat.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="truncate">{cat.name}</span>
+                    <cat.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate font-bold">{cat.name}</span>
                   </Button>
                 ))}
               </div>
 
               {/* Playlist Grid */}
-              <div className="grid grid-cols-1 gap-2">
-                {filteredPlaylists.map((playlist) => (
+              <div className="grid grid-cols-1 gap-3">
+                {filteredPlaylists.map((playlist, index) => (
                   <button
                     key={playlist.id}
                     onClick={() => handlePlaylistSelect(playlist)}
                     className={`
-                      p-3 rounded-xl border-2 transition-all duration-200 text-left
-                      flex items-center gap-3
+                      p-4 rounded-2xl border-2 transition-all duration-300 text-left
+                      flex items-center gap-4 opacity-0 animate-slide-up
                       ${selectedPlaylist?.id === playlist.id 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50 bg-card'
+                        ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10' 
+                        : 'border-border hover:border-primary/50 bg-card hover:shadow-lg'
                       }
                     `}
+                    style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
                   >
                     <div className={`
-                      w-10 h-10 rounded-lg flex items-center justify-center
+                      w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300
                       ${playlist.type === 'youtube' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}
+                      ${selectedPlaylist?.id === playlist.id ? 'scale-110' : ''}
                     `}>
-                      {playlist.type === 'youtube' ? <Youtube className="h-5 w-5" /> : <Music2 className="h-5 w-5" />}
+                      {playlist.type === 'youtube' ? <Youtube className="h-6 w-6" /> : <Music2 className="h-6 w-6" />}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-foreground">{playlist.nameVi}</p>
+                      <p className="font-bold text-foreground">{playlist.nameVi}</p>
                       <p className="text-xs text-muted-foreground">{playlist.type === 'youtube' ? 'YouTube' : 'Spotify'}</p>
                     </div>
                   </button>
                 ))}
               </div>
 
-              {/* Preview Player - Audio Only with Autoplay */}
+              {/* Preview Player */}
               {selectedPlaylist && (
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground text-center">
+                <div className="space-y-3 animate-slide-up">
+                  <p className="text-sm text-muted-foreground text-center font-medium">
                     🎵 Đang phát: {selectedPlaylist.nameVi}
                   </p>
-                  <div className="rounded-xl overflow-hidden border border-border bg-card">
+                  <div className="rounded-2xl overflow-hidden border-2 border-border bg-card shadow-lg">
                     <iframe
                       key={selectedPlaylist.id}
                       src={
@@ -254,7 +259,7 @@ export default function MusicSelectionPage() {
 
           {/* YouTube Custom URL */}
           {musicSource === 'youtube' && (
-            <div className="space-y-3">
+            <div className="space-y-4 animate-slide-up">
               <p className="text-sm text-muted-foreground">
                 Dán link YouTube bạn muốn nghe khi học
               </p>
@@ -262,17 +267,17 @@ export default function MusicSelectionPage() {
                 placeholder="https://www.youtube.com/watch?v=..."
                 value={customUrl}
                 onChange={(e) => setCustomUrl(e.target.value)}
-                className="bg-card"
+                className="bg-card h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               {customUrl && !extractYouTubeId(customUrl) && (
-                <p className="text-xs text-destructive">Link YouTube không hợp lệ</p>
+                <p className="text-xs text-destructive font-medium">Link YouTube không hợp lệ</p>
               )}
             </div>
           )}
 
           {/* Spotify Custom URL */}
           {musicSource === 'spotify' && (
-            <div className="space-y-3">
+            <div className="space-y-4 animate-slide-up">
               <p className="text-sm text-muted-foreground">
                 Dán link Spotify playlist hoặc track
               </p>
@@ -280,10 +285,10 @@ export default function MusicSelectionPage() {
                 placeholder="https://open.spotify.com/..."
                 value={customUrl}
                 onChange={(e) => setCustomUrl(e.target.value)}
-                className="bg-card"
+                className="bg-card h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               {customUrl && !convertSpotifyUrl(customUrl) && (
-                <p className="text-xs text-destructive">Link Spotify không hợp lệ</p>
+                <p className="text-xs text-destructive font-medium">Link Spotify không hợp lệ</p>
               )}
             </div>
           )}
@@ -291,13 +296,13 @@ export default function MusicSelectionPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
-        <div className="max-w-md mx-auto flex gap-3">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-xl relative z-10">
+        <div className="max-w-md mx-auto flex gap-4">
           <Button 
             variant="outline" 
             size="lg"
             onClick={handleSkip}
-            className="flex-1 shadow-soft"
+            className="flex-1"
           >
             Bỏ qua
           </Button>
@@ -305,10 +310,10 @@ export default function MusicSelectionPage() {
             size="lg"
             onClick={handleContinue}
             disabled={!canContinue()}
-            className="flex-1 shadow-soft"
+            className="flex-1"
           >
             Pomodoro
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
       </footer>

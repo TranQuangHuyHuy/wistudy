@@ -96,10 +96,14 @@ export default function ChooseBackgroundPage() {
   const isValid = selected && (selected !== 'text-prompt' || textPrompt.trim().length > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-5 w-60 h-60 bg-accent-pink/15 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-40 right-5 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
       {/* Header */}
-      <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/upload-idol')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+      <header className="flex items-center justify-between p-6 relative z-10">
+        <button onClick={() => navigate('/upload-idol')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-300 hover:scale-110 active:scale-95">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -107,15 +111,15 @@ export default function ChooseBackgroundPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pb-6 overflow-auto page-transition">
+      <main className="flex-1 px-6 pb-6 overflow-auto page-transition relative z-10">
         <div className="max-w-md mx-auto space-y-6">
           {/* Step Indicator */}
-          <div className="flex justify-center">
+          <div className="flex justify-center animate-fade-in">
             <StepIndicator currentStep={2} totalSteps={6} />
           </div>
 
           {/* Title */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 animate-slide-up">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Chọn Background
             </h1>
@@ -125,15 +129,16 @@ export default function ChooseBackgroundPage() {
           </div>
 
           {/* Background Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {backgrounds.map((bg) => (
-              <BackgroundCard
-                key={bg.id}
-                background={bg}
-                isSelected={selected === bg.id}
-                onSelect={() => handlePresetSelect(bg.id)}
-                previewImage={bg.preview}
-              />
+          <div className="grid grid-cols-2 gap-4">
+            {backgrounds.map((bg, index) => (
+              <div key={bg.id} className="opacity-0 animate-scale-in" style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}>
+                <BackgroundCard
+                  background={bg}
+                  isSelected={selected === bg.id}
+                  onSelect={() => handlePresetSelect(bg.id)}
+                  previewImage={bg.preview}
+                />
+              </div>
             ))}
           </div>
 
@@ -144,7 +149,7 @@ export default function ChooseBackgroundPage() {
               onClick={() => setShowLibrary(true)}
               className={`
                 relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video
-                border-2 ${selected === 'library-image' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
+                border-2 ${selected === 'library-image' ? 'border-primary shadow-lg shadow-primary/20' : 'border-dashed border-border hover:border-primary/50 hover:shadow-lg'}
                 flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
               `}
             >
@@ -152,14 +157,14 @@ export default function ChooseBackgroundPage() {
                 <>
                   <img src={customBackground} alt="Library" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                  <p className="absolute bottom-2 left-2 text-primary-foreground text-xs font-medium">
+                  <p className="absolute bottom-2 left-2 text-primary-foreground text-xs font-semibold">
                     Thư viện
                   </p>
                 </>
               ) : (
-                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110">
                   <Images className="w-6 h-6 mb-1.5" />
-                  <span className="text-xs font-medium">Thư viện ảnh</span>
+                  <span className="text-xs font-semibold">Thư viện ảnh</span>
                 </div>
               )}
             </button>
@@ -167,21 +172,21 @@ export default function ChooseBackgroundPage() {
             {/* Custom Upload */}
             <label className={`
               relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video cursor-pointer
-              border-2 ${selected === 'custom' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
+              border-2 ${selected === 'custom' ? 'border-primary shadow-lg shadow-primary/20' : 'border-dashed border-border hover:border-primary/50 hover:shadow-lg'}
               flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
             `}>
               {customBackground ? (
                 <>
                   <img src={customBackground} alt="Custom" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                  <p className="absolute bottom-3 left-3 text-primary-foreground text-sm font-medium">
+                  <p className="absolute bottom-3 left-3 text-primary-foreground text-sm font-semibold">
                     Tùy chỉnh
                   </p>
                 </>
               ) : (
-                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+                <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110">
                   <Upload className="w-6 h-6 mb-1.5" />
-                  <span className="text-xs font-medium">Tải lên</span>
+                  <span className="text-xs font-semibold">Tải lên</span>
                 </div>
               )}
               <input
@@ -197,28 +202,28 @@ export default function ChooseBackgroundPage() {
               onClick={handleTextPromptSelect}
               className={`
                 relative group rounded-2xl overflow-hidden transition-all duration-300 aspect-video
-                border-2 ${selected === 'text-prompt' ? 'border-primary shadow-elevated' : 'border-dashed border-border hover:border-primary/50 hover:shadow-card'}
+                border-2 ${selected === 'text-prompt' ? 'border-primary shadow-lg shadow-primary/20' : 'border-dashed border-border hover:border-primary/50 hover:shadow-lg'}
                 flex items-center justify-center bg-gradient-to-br from-secondary to-accent-gray
               `}
             >
-              <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors">
+              <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-all duration-300 group-hover:scale-110">
                 <Type className="w-6 h-6 mb-1.5" />
-                <span className="text-xs font-medium">Mô tả</span>
+                <span className="text-xs font-semibold">Mô tả</span>
               </div>
             </button>
           </div>
 
           {/* Text Input Area */}
           {showTextInput && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-3 animate-slide-up">
+              <label className="text-sm font-semibold text-foreground">
                 Mô tả không gian bạn muốn
               </label>
               <Textarea
                 placeholder="Ví dụ: Phòng học với cửa sổ nhìn ra biển, ánh hoàng hôn ấm áp..."
                 value={textPrompt}
                 onChange={(e) => setTextPrompt(e.target.value)}
-                className="min-h-[100px] resize-none"
+                className="min-h-[100px] resize-none rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <p className="text-xs text-muted-foreground">
                 AI sẽ tạo background dựa trên mô tả của bạn
@@ -229,15 +234,15 @@ export default function ChooseBackgroundPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm flex justify-center">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-xl flex justify-center relative z-10">
         <Button
           size="lg"
-          className="w-full md:max-w-md mx-auto shadow-soft"
+          className="w-full md:max-w-md mx-auto"
           onClick={handleContinue}
           disabled={!isValid}
         >
           Tạo ảnh
-          <ArrowRight className="w-4 h-4 ml-2" />
+          <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </footer>
 

@@ -30,7 +30,6 @@ export default function PomodoroSetupPage() {
     const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Fetch name
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name')
@@ -41,7 +40,6 @@ export default function PomodoroSetupPage() {
           setUserName(nameParts[nameParts.length - 1]);
         }
         
-        // Fetch tier
         const { data: subData } = await supabase
           .from('user_subscriptions')
           .select('tier')
@@ -84,10 +82,14 @@ export default function PomodoroSetupPage() {
   const isCustomRounds = customRounds || !roundOptions.includes(rounds);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-5 w-52 h-52 bg-accent-pink/15 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-40 left-5 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
       {/* Header */}
-      <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/choose-music')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+      <header className="flex items-center justify-between p-6 relative z-10">
+        <button onClick={() => navigate('/choose-music')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-300 hover:scale-110 active:scale-95">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -95,15 +97,15 @@ export default function PomodoroSetupPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pb-6 overflow-auto page-transition">
-        <div className="max-w-md mx-auto space-y-6">
-          {/* Step Indicator - dynamic based on tier */}
-          <div className="flex justify-center">
+      <main className="flex-1 px-6 pb-6 overflow-auto page-transition relative z-10">
+        <div className="max-w-md mx-auto space-y-5">
+          {/* Step Indicator */}
+          <div className="flex justify-center animate-fade-in">
             <StepIndicator currentStep={tier === 'free' ? 3 : 5} totalSteps={tier === 'free' ? 4 : 6} />
           </div>
 
           {/* Title */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 animate-slide-up">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Thiết lập Pomodoro
             </h1>
@@ -113,10 +115,10 @@ export default function PomodoroSetupPage() {
           </div>
 
           {/* Study Time */}
-          <div className="space-y-3 bg-card p-4 rounded-2xl border border-border/50 shadow-soft">
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <div className="w-8 h-8 bg-accent-blue rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-primary" />
+          <div className="space-y-4 bg-card p-5 rounded-2xl border border-border/50 shadow-card glass-card animate-scale-in">
+            <div className="flex items-center gap-3 text-sm font-bold text-foreground">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent-blue to-primary/30 rounded-xl flex items-center justify-center shadow-md">
+                <Clock className="w-5 h-5 text-primary" />
               </div>
               Thời gian học
             </div>
@@ -126,9 +128,9 @@ export default function PomodoroSetupPage() {
                   key={time}
                   onClick={() => handleStudyTimeSelect(time)}
                   className={cn(
-                    "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300",
                     studyTime === time && !isCustomStudyTime
-                      ? "bg-primary text-primary-foreground shadow-soft"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-blue hover:scale-105"
                   )}
                 >
@@ -136,21 +138,21 @@ export default function PomodoroSetupPage() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setCustomStudyTime(true)}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                  "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2",
                   isCustomStudyTime
-                    ? "bg-primary text-primary-foreground shadow-soft"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
                 )}
               >
-                <Settings2 className="w-3.5 h-3.5" />
+                <Settings2 className="w-4 h-4" />
                 Tùy chỉnh
               </button>
               {isCustomStudyTime && (
-                <div className="flex items-center gap-2 animate-fade-in">
+                <div className="flex items-center gap-2 animate-slide-in-right">
                   <Input
                     type="number"
                     min={1}
@@ -167,19 +169,19 @@ export default function PomodoroSetupPage() {
                     onBlur={() => {
                       if (studyTime < 1) setStudyTime(1);
                     }}
-                    className="w-20 text-center"
+                    className="w-20 text-center h-10 rounded-xl border-2"
                   />
-                  <span className="text-sm text-muted-foreground">phút</span>
+                  <span className="text-sm text-muted-foreground font-medium">phút</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Break Time */}
-          <div className="space-y-3 bg-card p-4 rounded-2xl border border-border/50 shadow-soft">
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <div className="w-8 h-8 bg-accent-pink rounded-lg flex items-center justify-center">
-                <Coffee className="w-4 h-4 text-primary" />
+          <div className="space-y-4 bg-card p-5 rounded-2xl border border-border/50 shadow-card glass-card animate-scale-in" style={{ animationDelay: '0.1s' }}>
+            <div className="flex items-center gap-3 text-sm font-bold text-foreground">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent-pink to-primary/30 rounded-xl flex items-center justify-center shadow-md">
+                <Coffee className="w-5 h-5 text-primary" />
               </div>
               Thời gian nghỉ
             </div>
@@ -189,9 +191,9 @@ export default function PomodoroSetupPage() {
                   key={time}
                   onClick={() => handleBreakTimeSelect(time)}
                   className={cn(
-                    "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300",
                     breakTime === time && !isCustomBreakTime
-                      ? "bg-accent-pink text-foreground shadow-soft"
+                      ? "bg-accent-pink text-foreground shadow-lg"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-pink/50 hover:scale-105"
                   )}
                 >
@@ -199,21 +201,21 @@ export default function PomodoroSetupPage() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setCustomBreakTime(true)}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                  "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2",
                   isCustomBreakTime
-                    ? "bg-accent-pink text-foreground shadow-soft"
+                    ? "bg-accent-pink text-foreground shadow-lg"
                     : "bg-secondary text-secondary-foreground hover:bg-accent-pink/50"
                 )}
               >
-                <Settings2 className="w-3.5 h-3.5" />
+                <Settings2 className="w-4 h-4" />
                 Tùy chỉnh
               </button>
               {isCustomBreakTime && (
-                <div className="flex items-center gap-2 animate-fade-in">
+                <div className="flex items-center gap-2 animate-slide-in-right">
                   <Input
                     type="number"
                     min={1}
@@ -230,19 +232,19 @@ export default function PomodoroSetupPage() {
                     onBlur={() => {
                       if (breakTime < 1) setBreakTime(1);
                     }}
-                    className="w-20 text-center"
+                    className="w-20 text-center h-10 rounded-xl border-2"
                   />
-                  <span className="text-sm text-muted-foreground">phút</span>
+                  <span className="text-sm text-muted-foreground font-medium">phút</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Rounds */}
-          <div className="space-y-3 bg-card p-4 rounded-2xl border border-border/50 shadow-soft">
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <div className="w-8 h-8 bg-accent-blue rounded-lg flex items-center justify-center">
-                <Repeat className="w-4 h-4 text-primary" />
+          <div className="space-y-4 bg-card p-5 rounded-2xl border border-border/50 shadow-card glass-card animate-scale-in" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center gap-3 text-sm font-bold text-foreground">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent-blue to-primary/30 rounded-xl flex items-center justify-center shadow-md">
+                <Repeat className="w-5 h-5 text-primary" />
               </div>
               Số vòng
             </div>
@@ -252,9 +254,9 @@ export default function PomodoroSetupPage() {
                   key={r}
                   onClick={() => handleRoundsSelect(r)}
                   className={cn(
-                    "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300",
                     rounds === r && !isCustomRounds
-                      ? "bg-primary text-primary-foreground shadow-soft"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                       : "bg-secondary text-secondary-foreground hover:bg-accent-blue hover:scale-105"
                   )}
                 >
@@ -262,21 +264,21 @@ export default function PomodoroSetupPage() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setCustomRounds(true)}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                  "px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2",
                   isCustomRounds
-                    ? "bg-primary text-primary-foreground shadow-soft"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "bg-secondary text-secondary-foreground hover:bg-accent-blue"
                 )}
               >
-                <Settings2 className="w-3.5 h-3.5" />
+                <Settings2 className="w-4 h-4" />
                 Tùy chỉnh
               </button>
               {isCustomRounds && (
-                <div className="flex items-center gap-2 animate-fade-in">
+                <div className="flex items-center gap-2 animate-slide-in-right">
                   <Input
                     type="number"
                     min={1}
@@ -293,32 +295,32 @@ export default function PomodoroSetupPage() {
                     onBlur={() => {
                       if (rounds < 1) setRounds(1);
                     }}
-                    className="w-20 text-center"
+                    className="w-20 text-center h-10 rounded-xl border-2"
                   />
-                  <span className="text-sm text-muted-foreground">vòng</span>
+                  <span className="text-sm text-muted-foreground font-medium">vòng</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Summary Card */}
-          <div className="p-5 bg-gradient-to-r from-accent-blue/30 to-accent-pink/30 rounded-2xl shadow-card border border-primary/20">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Tổng quan</h3>
-            <div className="space-y-2">
+          <div className="p-6 bg-gradient-to-r from-accent-blue/40 to-accent-pink/40 rounded-3xl shadow-xl border border-primary/30 glass-card animate-scale-in" style={{ animationDelay: '0.3s' }}>
+            <h3 className="text-sm font-bold text-foreground mb-4">Tổng quan</h3>
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-foreground">Tổng thời gian</span>
-                <span className="font-bold text-primary text-lg">
+                <span className="text-foreground font-medium">Tổng thời gian</span>
+                <span className="font-bold text-primary text-xl">
                   {hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`}
                 </span>
               </div>
-              <div className="h-px bg-border/50 my-2" />
+              <div className="h-px bg-border/50 my-3" />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Học</span>
-                <span className="font-medium">{studyTime * rounds} phút</span>
+                <span className="font-bold">{studyTime * rounds} phút</span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Nghỉ</span>
-                <span className="font-medium">{breakTime * (rounds - 1)} phút</span>
+                <span className="font-bold">{breakTime * (rounds - 1)} phút</span>
               </div>
             </div>
           </div>
@@ -326,13 +328,13 @@ export default function PomodoroSetupPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-sm flex justify-center">
+      <footer className="p-6 border-t border-border bg-card/80 backdrop-blur-xl flex justify-center relative z-10">
         <Button
           size="lg"
-          className="w-full md:max-w-md mx-auto shadow-soft"
+          className="w-full md:max-w-md mx-auto"
           onClick={handleStart}
         >
-          <Play className="w-4 h-4 mr-2" />
+          <Play className="w-5 h-5 mr-2" />
           Bắt đầu học
         </Button>
       </footer>

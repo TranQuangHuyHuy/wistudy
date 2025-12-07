@@ -27,7 +27,6 @@ export default function LoginPage() {
     let isMounted = true;
 
     const handleAuth = async () => {
-      // Check if hash contains OAuth tokens (only redirect on OAuth callback)
       const hash = window.location.hash;
       if (hash && hash.includes('access_token')) {
         try {
@@ -57,7 +56,6 @@ export default function LoginPage() {
       }
     };
 
-    // Set up auth state listener - only redirect on SIGNED_IN event (new login)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
 
@@ -76,8 +74,11 @@ export default function LoginPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Đang kiểm tra...</p>
+        </div>
       </div>
     );
   }
@@ -131,10 +132,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-blue/20 via-background to-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent-pink/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+
       {/* Header */}
-      <header className="flex items-center justify-between p-6">
-        <button onClick={() => navigate('/')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-200 hover:scale-105">
+      <header className="flex items-center justify-between p-6 relative z-10">
+        <button onClick={() => navigate('/')} className="p-2.5 -m-2 hover:bg-secondary rounded-xl transition-all duration-300 hover:scale-110 active:scale-95">
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <Logo size="sm" />
@@ -142,12 +147,12 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-6 page-transition">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-6 page-transition relative z-10">
         <div className="w-full max-w-md mx-auto space-y-6">
           {/* Hero */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex p-4 bg-gradient-to-br from-accent-blue to-accent-pink rounded-2xl mb-2 group cursor-default shadow-soft">
-              <BookOpen className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
+          <div className="text-center space-y-4 animate-slide-up">
+            <div className="inline-flex p-5 bg-gradient-to-br from-accent-blue via-accent-pink/50 to-accent-blue rounded-3xl mb-2 group cursor-default shadow-xl shadow-primary/20 animate-float">
+              <BookOpen className="w-12 h-12 text-primary transition-all duration-500 group-hover:scale-110" />
             </div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Đăng nhập
@@ -158,17 +163,17 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <div className="space-y-4 bg-card p-6 rounded-2xl shadow-soft border border-border/50">
+          <div className="space-y-5 bg-card p-7 rounded-3xl shadow-card border border-border/50 glass-card animate-scale-in">
             {/* Google Login Button */}
             <Button
               type="button"
-              variant="outline"
+              variant="google"
               className="w-full flex items-center justify-center gap-3"
               onClick={handleGoogleLogin}
               disabled={isGoogleLoading}
             >
               {isGoogleLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -185,13 +190,13 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">hoặc</span>
+                <span className="bg-card px-3 text-muted-foreground font-medium">hoặc</span>
               </div>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -199,10 +204,11 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">Mật khẩu</Label>
+                <Label htmlFor="password" className="text-sm font-semibold">Mật khẩu</Label>
                 <Input
                   id="password"
                   type="password"
@@ -211,6 +217,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <Button
@@ -218,15 +225,15 @@ export default function LoginPage() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isLoading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
                 Đăng nhập
               </Button>
             </form>
           </div>
 
-          <p className="text-sm text-center text-muted-foreground">
+          <p className="text-sm text-center text-muted-foreground animate-fade-in">
             Chưa có tài khoản?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">
+            <Link to="/register" className="text-primary font-semibold hover:underline transition-all">
               Đăng ký ngay
             </Link>
           </p>
