@@ -81,13 +81,11 @@ export default function RegisterPage() {
         return;
       }
       
-      // Check if user already exists (Supabase returns user with empty identities for existing email)
       if (data?.user && data.user.identities && data.user.identities.length === 0) {
         toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.');
         return;
       }
       
-      // Success - redirect to email confirmation page
       navigate('/email-confirmation', { state: { email } });
     } catch (err) {
       toast.error('Có lỗi xảy ra');
@@ -97,18 +95,22 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-accent-pink/20 via-background to-background flex flex-col">
-      <header className="p-6 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-b from-accent-pink/30 via-background to-background flex flex-col relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-accent-pink/20 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-20 right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+
+      <header className="p-6 flex items-center justify-between relative z-10">
         <Logo size="sm" />
         <ThemeToggle />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12 relative z-10">
         <div className="w-full max-w-sm space-y-8 page-transition">
           {/* Hero */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex p-4 bg-gradient-to-br from-accent-pink to-accent-blue rounded-2xl mb-2 group cursor-default shadow-soft">
-              <UserPlus className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
+          <div className="text-center space-y-4 animate-slide-up">
+            <div className="inline-flex p-5 bg-gradient-to-br from-accent-pink via-accent-blue/50 to-accent-pink rounded-3xl mb-2 group cursor-default shadow-xl shadow-primary/20 animate-float">
+              <UserPlus className="w-12 h-12 text-primary transition-all duration-500 group-hover:scale-110" />
             </div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
               Đăng ký tài khoản
@@ -119,9 +121,9 @@ export default function RegisterPage() {
           </div>
 
           {/* Register Form */}
-          <form onSubmit={handleRegister} className="space-y-4 bg-card p-6 rounded-2xl shadow-soft border border-border/50">
+          <form onSubmit={handleRegister} className="space-y-4 bg-card p-7 rounded-3xl shadow-card border border-border/50 glass-card animate-scale-in">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium">Họ và tên</Label>
+              <Label htmlFor="fullName" className="text-sm font-semibold">Họ và tên</Label>
               <Input
                 id="fullName"
                 type="text"
@@ -129,10 +131,11 @@ export default function RegisterPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -140,10 +143,11 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-sm font-semibold">Mật khẩu</Label>
               <Input
                 id="password"
                 type="password"
@@ -152,10 +156,11 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">Xác nhận mật khẩu</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-semibold">Xác nhận mật khẩu</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -164,6 +169,7 @@ export default function RegisterPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
+                className="h-12 rounded-xl border-2 transition-all duration-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <Button
@@ -171,14 +177,14 @@ export default function RegisterPage() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
               Đăng ký
             </Button>
           </form>
 
-          <p className="text-sm text-center text-muted-foreground">
+          <p className="text-sm text-center text-muted-foreground animate-fade-in">
             Đã có tài khoản?{' '}
-            <Link to="/login" className="text-primary font-medium hover:underline">
+            <Link to="/login" className="text-primary font-semibold hover:underline transition-all">
               Đăng nhập
             </Link>
           </p>

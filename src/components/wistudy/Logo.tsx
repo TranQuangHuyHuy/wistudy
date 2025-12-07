@@ -14,15 +14,15 @@ export function Logo({ size = 'md', clickable = true }: LogoProps) {
   };
 
   const content = (
-    <div className={`font-bold ${sizeClasses[size]} tracking-tight`}>
-      <span className="text-primary">Wi</span>
-      <span className="text-foreground">Study</span>
+    <div className={`font-bold ${sizeClasses[size]} tracking-tight group`}>
+      <span className="text-primary transition-all duration-300 group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]">Wi</span>
+      <span className="text-foreground transition-colors duration-300 group-hover:text-primary/80">Study</span>
     </div>
   );
 
   if (clickable) {
     return (
-      <Link to="/" className="hover:opacity-80 transition-opacity">
+      <Link to="/" className="transition-transform duration-300 hover:scale-105">
         {content}
       </Link>
     );
