@@ -28,6 +28,33 @@ export default function LoginPage() {
 
     const handleAuth = async () => {
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      // Check for OAuth error in URL (from failed Google login)
+      const errorCode = searchParams.get('error') || 
+                        (hash ? new URLSearchParams(hash.substring(1)).get('error') : null);
+      const errorDescription = searchParams.get('error_description') ||
+                              (hash ? new URLSearchParams(hash.substring(1)).get('error_description') : null);
+      
+      if (errorCode) {
+        // Clear error from URL
+        window.history.replaceState(null, '', window.location.pathname);
+        
+        // Show error message to user
+        if (errorCode === 'server_error' || errorCode === 'access_denied') {
+          toast.error('Đăng nhập Google thất bại. Vui lòng thử lại sau.');
+        } else {
+          toast.error(`Lỗi đăng nhập: ${errorDescription || errorCode}`);
+        }
+        
+        if (isMounted) {
+          setIsCheckingAuth(false);
+          setIsGoogleLoading(false);
+        }
+        return; // Stay on login page
+      }
+      
+      // Handle successful OAuth callback with tokens in hash
       if (hash && hash.includes('access_token')) {
         try {
           const params = new URLSearchParams(hash.substring(1));
