@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Home, Clock, Maximize, Minimize, Music2, Volume2, VolumeX } from 'lucide-react';
+import { X, Clock, Maximize, Minimize, Music2, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { PomodoroTimer } from '@/components/wistudy/PomodoroTimer';
@@ -18,10 +18,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function StudyRoomPage() {
   const navigate = useNavigate();
-  const { userData, resetApp, setSelectedMusic } = useWiStudy();
+  const { userData } = useWiStudy();
   const [showTimer, setShowTimer] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
@@ -47,12 +53,10 @@ export default function StudyRoomPage() {
       const isFs = !!document.fullscreenElement;
       setIsFullscreen(isFs);
       if (isFs) {
-        // Start hide timer when entering fullscreen
         hideTimeoutRef.current = setTimeout(() => {
           setShowOverlays(false);
         }, 5000);
       } else {
-        // Show overlays when exiting fullscreen
         setShowOverlays(true);
         if (hideTimeoutRef.current) {
           clearTimeout(hideTimeoutRef.current);
@@ -74,25 +78,22 @@ export default function StudyRoomPage() {
     
     setShowOverlays(true);
     
-    // Clear existing timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
     
-    // Set new hide timeout
     hideTimeoutRef.current = setTimeout(() => {
       setShowOverlays(false);
     }, 5000);
   }, [isFullscreen]);
 
   return (
-    <div 
-      className="min-h-screen bg-background relative"
-      onMouseMove={handleMouseMove}
-    >
-      {/* Main Content - Full screen image with overlays */}
-      <main className="absolute inset-0 animate-fade-in">
-        {/* Full screen image */}
+    <TooltipProvider>
+      <div 
+        className="min-h-screen bg-background relative overflow-hidden"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Background Image */}
         <div className="absolute inset-0">
           {userData.generatedImage ? (
             <img
@@ -113,33 +114,38 @@ export default function StudyRoomPage() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-accent-blue to-accent-pink flex items-center justify-center">
-              <p className="text-muted-foreground">Không có ảnh</p>
-            </div>
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20" />
           )}
         </div>
 
-        {/* Overlays container - buttons only, fade after 5s */}
+        {/* Top Bar - Logo & Exit */}
         <div className={cn(
-          "transition-opacity duration-300",
+          "absolute top-4 left-4 z-20 flex items-center gap-3 transition-opacity duration-500",
           showOverlays ? "opacity-100" : "opacity-0 pointer-events-none"
         )}>
-          {/* Logo overlay - top left */}
-          <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-md rounded-xl px-3 py-2">
+          {/* Logo */}
+          <div className="bg-background/90 backdrop-blur-xl rounded-2xl px-4 py-2.5 shadow-lg border border-border/30">
             <Logo size="sm" />
           </div>
 
-          {/* Exit button - below logo */}
+          {/* Exit Button */}
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute top-16 left-4 z-10 bg-background/80 hover:bg-background backdrop-blur-md rounded-full w-10 h-10"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </AlertDialogTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="bg-background/90 hover:bg-background backdrop-blur-xl rounded-xl w-10 h-10 shadow-lg border border-border/30 hover:scale-105 transition-all duration-200"
+                  >
+                    <X className="w-4 h-4 text-foreground" />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Thoát phòng học</p>
+              </TooltipContent>
+            </Tooltip>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Thoát phòng học?</AlertDialogTitle>
@@ -155,58 +161,107 @@ export default function StudyRoomPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          {/* Timer toggle button */}
-          <Button
-            onClick={() => setShowTimer(!showTimer)}
-            className="absolute top-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-            size="icon"
-          >
-            <Clock className="w-5 h-5 text-foreground" />
-          </Button>
-
-          {/* Music button - below timer button */}
-          {userData.selectedMusic && (
-            <Button
-              onClick={() => setShowMusicPlayer(!showMusicPlayer)}
-              className="absolute top-[68px] right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-              size="icon"
-            >
-              <Music2 className="w-5 h-5 text-foreground" />
-            </Button>
-          )}
-
-          {/* Sound toggle button - below music button */}
-          <Button
-            onClick={() => setIsMuted(!isMuted)}
-            className={cn(
-              "absolute right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform",
-              userData.selectedMusic ? "top-[124px]" : "top-[68px]"
-            )}
-            size="icon"
-          >
-            {isMuted ? (
-              <VolumeX className="w-5 h-5 text-foreground" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-foreground" />
-            )}
-          </Button>
-
-          {/* Fullscreen button - bottom right */}
-          <Button
-            onClick={toggleFullscreen}
-            className="absolute bottom-4 right-4 z-10 bg-background/95 hover:bg-background backdrop-blur-md rounded-full w-11 h-11 shadow-lg border border-border/50 hover:scale-105 transition-transform"
-            size="icon"
-          >
-            {isFullscreen ? (
-              <Minimize className="w-5 h-5 text-foreground" />
-            ) : (
-              <Maximize className="w-5 h-5 text-foreground" />
-            )}
-          </Button>
         </div>
 
-        {/* Timer panel - always mounted, visibility controlled */}
+        {/* Control Bar - Right Side */}
+        <div className={cn(
+          "absolute top-4 right-4 z-20 transition-opacity duration-500",
+          showOverlays ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}>
+          <div className="bg-background/90 backdrop-blur-xl rounded-2xl p-2 shadow-lg border border-border/30 flex items-center gap-1">
+            {/* Timer Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setShowTimer(!showTimer)}
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "rounded-xl w-10 h-10 hover:bg-primary/10 transition-all duration-200",
+                    showTimer && "bg-primary/15 text-primary"
+                  )}
+                >
+                  <Clock className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{showTimer ? 'Ẩn đồng hồ' : 'Hiện đồng hồ'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Music Toggle */}
+            {userData.selectedMusic && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setShowMusicPlayer(!showMusicPlayer)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "rounded-xl w-10 h-10 hover:bg-primary/10 transition-all duration-200",
+                      showMusicPlayer && "bg-primary/15 text-primary"
+                    )}
+                  >
+                    <Music2 className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{showMusicPlayer ? 'Ẩn nhạc' : 'Hiện nhạc'}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Mute Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setIsMuted(!isMuted)}
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "rounded-xl w-10 h-10 hover:bg-primary/10 transition-all duration-200",
+                    isMuted && "bg-destructive/15 text-destructive"
+                  )}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-border/50 mx-1" />
+
+            {/* Fullscreen Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggleFullscreen}
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl w-10 h-10 hover:bg-primary/10 transition-all duration-200"
+                >
+                  {isFullscreen ? (
+                    <Minimize className="w-5 h-5" />
+                  ) : (
+                    <Maximize className="w-5 h-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{isFullscreen ? 'Thu nhỏ' : 'Toàn màn hình'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Timer Panel */}
         <div className={cn(
           "transition-opacity duration-300",
           showTimer ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -218,11 +273,11 @@ export default function StudyRoomPage() {
             compact
             draggable
             muted={isMuted}
-            initialPosition={{ x: window.innerWidth - 180, y: 16 }}
+            initialPosition={{ x: window.innerWidth - 180, y: 80 }}
           />
         </div>
 
-        {/* Music Player - outside overlay, stays visible */}
+        {/* Music Player */}
         {userData.selectedMusic && (
           <MusicPlayer 
             music={userData.selectedMusic} 
@@ -231,7 +286,7 @@ export default function StudyRoomPage() {
             muted={isMuted}
           />
         )}
-      </main>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
