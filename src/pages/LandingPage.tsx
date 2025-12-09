@@ -5,6 +5,7 @@ import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
 import { BookOpen, Sparkles, Clock, ArrowRight, Settings, Check, X, MessageCircle, Phone, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type SubscriptionTier = 'free' | 'pro';
 
@@ -44,8 +45,28 @@ export default function LandingPage() {
 
     const handleAuthCallback = async () => {
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
       
-      // Handle OAuth callback with tokens in hash
+      // Check for OAuth error in URL (from failed Google login)
+      const errorCode = searchParams.get('error') || 
+                        (hash ? new URLSearchParams(hash.substring(1)).get('error') : null);
+      const errorDescription = searchParams.get('error_description') ||
+                              (hash ? new URLSearchParams(hash.substring(1)).get('error_description') : null);
+      
+      if (errorCode) {
+        // Clear error from URL and redirect to login with error
+        window.history.replaceState(null, '', window.location.pathname);
+        
+        if (isMounted) {
+          setIsLoading(false);
+          // Redirect to login page and show error there
+          toast.error(errorDescription || 'Đăng nhập Google thất bại. Vui lòng thử lại.');
+          navigate('/login');
+        }
+        return;
+      }
+      
+      // Handle successful OAuth callback with tokens in hash
       if (hash && hash.includes('access_token')) {
         const params = new URLSearchParams(hash.substring(1));
         const accessToken = params.get('access_token');
