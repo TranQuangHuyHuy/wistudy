@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/wistudy/Logo';
 import { ThemeToggle } from '@/components/wistudy/ThemeToggle';
-import { BookOpen, Sparkles, Clock, ArrowRight, Settings, Check, X, MessageCircle, Phone } from 'lucide-react';
+import { BookOpen, Sparkles, Clock, ArrowRight, Settings, Check, X, MessageCircle, Phone, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type SubscriptionTier = 'free' | 'pro';
@@ -12,6 +12,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tier, setTier] = useState<SubscriptionTier | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchTier = async (userId: string) => {
     const { data } = await supabase
@@ -25,39 +26,15 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      const hash = window.location.hash;
-      
-      if (hash && hash.includes('access_token')) {
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        
-        if (accessToken && refreshToken) {
-          const { data } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          
-          window.history.replaceState(null, '', window.location.pathname);
-          
-          if (data?.session?.user) {
-            setIsLoggedIn(true);
-            fetchTier(data.session.user.id);
-            return;
-          }
-        }
-      }
+    let isMounted = true;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session?.user);
-      if (session?.user) {
-        fetchTier(session.user.id);
-      }
-    };
-
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      
       setIsLoggedIn(!!session?.user);
+      setIsLoading(false);
+      
       if (session?.user) {
         setTimeout(() => fetchTier(session.user.id), 0);
       } else {
@@ -65,10 +42,67 @@ export default function LandingPage() {
       }
     });
 
+    const handleAuthCallback = async () => {
+      const hash = window.location.hash;
+      
+      // Handle OAuth callback with tokens in hash
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          try {
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
+            
+            if (data?.session?.user && isMounted) {
+              setIsLoggedIn(true);
+              setIsLoading(false);
+              fetchTier(data.session.user.id);
+              return;
+            }
+          } catch (err) {
+            console.error('Error setting session:', err);
+          }
+        }
+      }
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isMounted) {
+        setIsLoggedIn(!!session?.user);
+        setIsLoading(false);
+        if (session?.user) {
+          fetchTier(session.user.id);
+        }
+      }
+    };
+
     handleAuthCallback();
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-accent-blue/30 via-background to-background flex flex-col relative overflow-hidden">
